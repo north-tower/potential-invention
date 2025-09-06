@@ -3,10 +3,12 @@
 import { Sun, Moon, Monitor, Cloud } from 'lucide-react'
 import { useTheme } from './ThemeProvider'
 
+type Theme = 'dark' | 'light' | 'system'
+
 export function Header() {
   const { theme, setTheme } = useTheme()
 
-  const themeButtons = [
+  const themeButtons: Array<{ key: Theme; icon: typeof Sun; label: string }> = [
     { key: 'light', icon: Sun, label: 'Light mode' },
     { key: 'dark', icon: Moon, label: 'Dark mode' },
     { key: 'system', icon: Monitor, label: 'System mode' }
