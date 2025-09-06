@@ -28,13 +28,10 @@
     "date-fns": "^2.30.0",
     "clsx": "^2.0.0",
     "lucide-react": "^0.294.0",
-    "recharts": "^2.8.0",
-    "react-leaflet": "^4.2.1",
-    "leaflet": "^1.9.4"
+    "recharts": "^2.8.0"
   },
   "devDependencies": {
     "eslint": "^8.56.0",
-    "eslint-config-next": "^14.0.4",
-    "@types/leaflet": "^1.9.8"
+    "eslint-config-next": "^14.0.4"
   }
 }
