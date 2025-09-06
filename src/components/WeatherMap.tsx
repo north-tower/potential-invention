@@ -1,8 +1,8 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { WeatherData } from '@/types/weather'
-import { Map, Globe } from 'lucide-react'
+import { Map, Globe, Navigation, MapPin } from 'lucide-react'
 
 interface WeatherMapProps {
   location: string
@@ -10,175 +10,170 @@ interface WeatherMapProps {
 }
 
 export function WeatherMap({ location, weatherData }: WeatherMapProps) {
-  const [mapLoaded, setMapLoaded] = useState(false)
   const [showMap, setShowMap] = useState(false)
-
-  useEffect(() => {
-    // Dynamically import Leaflet to avoid SSR issues
-    const loadMap = async () => {
-      if (typeof window !== 'undefined') {
-        try {
-          const L = await import('leaflet')
-          await import('leaflet/dist/leaflet.css')
-          
-          // Fix for default markers in Leaflet
-          delete (L.Icon.Default.prototype as any)._getIconUrl
-          L.Icon.Default.mergeOptions({
-            iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
-            iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
-            shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
-          })
-          
-          setMapLoaded(true)
-        } catch (error) {
-          console.error('Failed to load map:', error)
-        }
-      }
-    }
-
-    loadMap()
-  }, [])
 
   const toggleMap = () => {
     setShowMap(!showMap)
   }
 
-  const getWeatherMapUrl = () => {
+  const getOpenStreetMapUrl = () => {
     const { lat, lon } = weatherData.coord
-    const layer = weatherData.weather[0].main.toLowerCase()
-    
-    // OpenWeatherMap layer types
-    const layerMap: Record<string, string> = {
-      'clear': 'temp_new',
-      'clouds': 'clouds_new',
-      'rain': 'precipitation_new',
-      'snow': 'precipitation_new',
-      'thunderstorm': 'precipitation_new'
-    }
-    
-    const mapLayer = layerMap[layer] || 'temp_new'
-    
-    return `https://tile.openweathermap.org/map/${mapLayer}/{z}/{x}/{y}.png?appid=${process.env.NEXT_PUBLIC_OPENWEATHER_API_KEY}`
+    return `https://www.openstreetmap.org/export/embed.html?bbox=${lon-0.01},${lat-0.01},${lon+0.01},${lat+0.01}&layer=mapnik&marker=${lat},${lon}`
+  }
+
+  const getGoogleMapsUrl = () => {
+    const { lat, lon } = weatherData.coord
+    return `https://www.google.com/maps?q=${lat},${lon}&z=10`
   }
 
   return (
-    <div className="weather-card">
-      <div className="flex items-center justify-between mb-6">
-        <h3 className="text-2xl font-bold text-gray-900 dark:text-white">
-          Weather Map
-        </h3>
-        <button
-          onClick={toggleMap}
-          className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-        >
-          {showMap ? (
-            <>
-              <Globe className="h-5 w-5" />
-              <span>Hide Map</span>
-            </>
-          ) : (
-            <>
-              <Map className="h-5 w-5" />
-              <span>Show Map</span>
-            </>
-          )}
-        </button>
-      </div>
-
-      {showMap && (
-        <div className="space-y-4">
-          {/* Map Container */}
-          <div className="relative">
-            <div 
-              id="weather-map" 
-              className="w-full h-96 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-800"
+    <div className="mx-auto max-w-7xl">
+      <div className="group relative overflow-hidden rounded-2xl bg-white/60 p-6 shadow-xl backdrop-blur-xl ring-1 ring-gray-200/50 transition-all duration-300 hover:shadow-2xl dark:bg-gray-900/60 dark:ring-gray-800/50 sm:p-8">
+        {/* Background Effects */}
+        <div className="absolute inset-0 bg-gradient-to-br from-green-50/30 via-transparent to-blue-50/30 opacity-0 transition-opacity duration-500 group-hover:opacity-100 dark:from-green-950/10 dark:to-blue-950/10"></div>
+        
+        <div className="relative z-10">
+          {/* Header */}
+          <div className="mb-8 flex items-center justify-between">
+            <div className="flex items-center space-x-3">
+              <div className="rounded-xl bg-gradient-to-br from-green-500 to-blue-600 p-2.5 shadow-lg">
+                <Map className="h-5 w-5 text-white" />
+              </div>
+              <div>
+                <h3 className="bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 bg-clip-text text-2xl font-bold text-transparent dark:from-white dark:via-gray-100 dark:to-white sm:text-3xl">
+                  Weather Map
+                </h3>
+                <p className="text-sm text-gray-600 dark:text-gray-400">
+                  Location visualization
+                </p>
+              </div>
+            </div>
+            
+            <button
+              onClick={toggleMap}
+              className="flex items-center space-x-2 rounded-xl bg-gradient-to-r from-green-500 to-blue-600 px-4 py-2 text-white shadow-lg transition-all duration-300 hover:scale-105 hover:shadow-xl"
             >
-              {mapLoaded ? (
-                <div className="w-full h-full flex items-center justify-center">
-                  <div className="text-center">
-                    <Map className="h-12 w-12 text-gray-400 mx-auto mb-2" />
-                    <p className="text-gray-600 dark:text-gray-400">
-                      Interactive map will be displayed here
-                    </p>
-                    <p className="text-sm text-gray-500 dark:text-gray-500 mt-1">
-                      Location: {weatherData.name}, {weatherData.sys.country}
-                    </p>
-                  </div>
-                </div>
+              {showMap ? (
+                <>
+                  <Globe className="h-4 w-4" />
+                  <span className="hidden sm:inline">Hide Map</span>
+                </>
               ) : (
-                <div className="w-full h-full flex items-center justify-center">
-                  <div className="loading-dots">
-                    <div></div>
-                    <div></div>
-                    <div></div>
-                    <div></div>
+                <>
+                  <Map className="h-4 w-4" />
+                  <span className="hidden sm:inline">Show Map</span>
+                </>
+              )}
+            </button>
+          </div>
+
+          {showMap && (
+            <div className="space-y-6">
+              {/* Map Container */}
+              <div className="relative overflow-hidden rounded-xl bg-gradient-to-br from-blue-50 to-green-50 dark:from-blue-950/30 dark:to-green-950/30">
+                <div className="relative h-96 w-full">
+                  {/* Static Map using OpenStreetMap */}
+                  <iframe
+                    src={getOpenStreetMapUrl()}
+                    className="h-full w-full border-0"
+                    title="Weather Location Map"
+                  />
+                  
+                  {/* Overlay with location info */}
+                  <div className="absolute bottom-4 left-4 rounded-lg bg-white/90 px-3 py-2 shadow-lg backdrop-blur-sm dark:bg-gray-800/90">
+                    <div className="flex items-center space-x-2">
+                      <MapPin className="h-4 w-4 text-blue-600" />
+                      <span className="text-sm font-medium text-gray-900 dark:text-white">
+                        {weatherData.name}, {weatherData.sys.country}
+                      </span>
+                    </div>
                   </div>
                 </div>
-              )}
-            </div>
-          </div>
+              </div>
 
-          {/* Map Information */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
-              <h4 className="font-semibold text-gray-900 dark:text-white mb-2">
-                Coordinates
-              </h4>
-              <div className="text-sm text-gray-600 dark:text-gray-400">
-                <div>Latitude: {weatherData.coord.lat.toFixed(4)}°</div>
-                <div>Longitude: {weatherData.coord.lon.toFixed(4)}°</div>
-              </div>
-            </div>
+              {/* Map Information Cards */}
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+                <div className="transform rounded-xl bg-white/40 p-4 backdrop-blur-sm ring-1 ring-gray-200/30 transition-all duration-300 hover:bg-white/60 hover:scale-105 hover:shadow-lg dark:bg-gray-800/40 dark:ring-gray-700/30 dark:hover:bg-gray-800/60">
+                  <div className="mb-3 flex items-center space-x-2">
+                    <Navigation className="h-4 w-4 text-green-600" />
+                    <h4 className="font-semibold text-gray-900 dark:text-white">Coordinates</h4>
+                  </div>
+                  <div className="space-y-1 text-sm text-gray-600 dark:text-gray-400">
+                    <div>Lat: {weatherData.coord.lat.toFixed(4)}°</div>
+                    <div>Lon: {weatherData.coord.lon.toFixed(4)}°</div>
+                  </div>
+                </div>
 
-            <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
-              <h4 className="font-semibold text-gray-900 dark:text-white mb-2">
-                Map Layers
-              </h4>
-              <div className="text-sm text-gray-600 dark:text-gray-400">
-                <div>Temperature</div>
-                <div>Precipitation</div>
-                <div>Clouds</div>
-              </div>
-            </div>
+                <div className="transform rounded-xl bg-white/40 p-4 backdrop-blur-sm ring-1 ring-gray-200/30 transition-all duration-300 hover:bg-white/60 hover:scale-105 hover:shadow-lg dark:bg-gray-800/40 dark:ring-gray-700/30 dark:hover:bg-gray-800/60">
+                  <div className="mb-3 flex items-center space-x-2">
+                    <Globe className="h-4 w-4 text-blue-600" />
+                    <h4 className="font-semibold text-gray-900 dark:text-white">Location</h4>
+                  </div>
+                  <div className="space-y-1 text-sm text-gray-600 dark:text-gray-400">
+                    <div>{weatherData.name}</div>
+                    <div>{weatherData.sys.country}</div>
+                  </div>
+                </div>
 
-            <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
-              <h4 className="font-semibold text-gray-900 dark:text-white mb-2">
-                Weather Data
-              </h4>
-              <div className="text-sm text-gray-600 dark:text-gray-400">
-                <div>Current: {weatherData.weather[0].main}</div>
-                <div>Temperature: {Math.round(weatherData.main.temp)}°C</div>
-                <div>Humidity: {weatherData.main.humidity}%</div>
+                <div className="transform rounded-xl bg-white/40 p-4 backdrop-blur-sm ring-1 ring-gray-200/30 transition-all duration-300 hover:bg-white/60 hover:scale-105 hover:shadow-lg dark:bg-gray-800/40 dark:ring-gray-700/30 dark:hover:bg-gray-800/60">
+                  <div className="mb-3 flex items-center space-x-2">
+                    <MapPin className="h-4 w-4 text-purple-600" />
+                    <h4 className="font-semibold text-gray-900 dark:text-white">Weather</h4>
+                  </div>
+                  <div className="space-y-1 text-sm text-gray-600 dark:text-gray-400">
+                    <div>{weatherData.weather[0].main}</div>
+                    <div>{Math.round(weatherData.main.temp)}°C</div>
+                  </div>
+                </div>
               </div>
-            </div>
-          </div>
 
-          {/* Map Legend */}
-          <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4">
-            <h4 className="font-semibold text-gray-900 dark:text-white mb-2">
-              Map Legend
-            </h4>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-              <div className="flex items-center space-x-2">
-                <div className="w-4 h-4 bg-red-500 rounded"></div>
-                <span className="text-gray-700 dark:text-gray-300">Hot</span>
-              </div>
-              <div className="flex items-center space-x-2">
-                <div className="w-4 h-4 bg-yellow-500 rounded"></div>
-                <span className="text-gray-700 dark:text-gray-300">Warm</span>
-              </div>
-              <div className="flex items-center space-x-2">
-                <div className="w-4 h-4 bg-blue-500 rounded"></div>
-                <span className="text-gray-700 dark:text-gray-300">Cool</span>
-              </div>
-              <div className="flex items-center space-x-2">
-                <div className="w-4 h-4 bg-purple-500 rounded"></div>
-                <span className="text-gray-700 dark:text-gray-300">Cold</span>
+              {/* External Map Links */}
+              <div className="transform rounded-xl bg-gradient-to-br from-green-50/80 to-blue-50/80 p-6 backdrop-blur-sm ring-1 ring-green-200/50 transition-all duration-300 hover:shadow-lg dark:from-green-950/30 dark:to-blue-950/30 dark:ring-green-800/30">
+                <div className="mb-4 flex items-center space-x-3">
+                  <div className="rounded-lg bg-green-100 p-2 dark:bg-green-900/50">
+                    <Navigation className="h-5 w-5 text-green-600 dark:text-green-400" />
+                  </div>
+                  <h4 className="text-lg font-bold text-gray-900 dark:text-white">
+                    External Maps
+                  </h4>
+                </div>
+                
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                  <a
+                    href={getGoogleMapsUrl()}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="group flex items-center space-x-3 rounded-lg bg-white/60 p-3 backdrop-blur-sm transition-all duration-300 hover:bg-white/80 hover:scale-105 hover:shadow-md dark:bg-gray-800/60 dark:hover:bg-gray-800/80"
+                  >
+                    <div className="rounded-lg bg-red-100 p-2 group-hover:bg-red-200 dark:bg-red-900/50 dark:group-hover:bg-red-900/70">
+                      <Map className="h-4 w-4 text-red-600 dark:text-red-400" />
+                    </div>
+                    <div>
+                      <div className="font-medium text-gray-900 dark:text-white">Google Maps</div>
+                      <div className="text-xs text-gray-600 dark:text-gray-400">View in Google Maps</div>
+                    </div>
+                  </a>
+                  
+                  <a
+                    href={`https://www.openstreetmap.org/?mlat=${weatherData.coord.lat}&mlon=${weatherData.coord.lon}&zoom=10`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="group flex items-center space-x-3 rounded-lg bg-white/60 p-3 backdrop-blur-sm transition-all duration-300 hover:bg-white/80 hover:scale-105 hover:shadow-md dark:bg-gray-800/60 dark:hover:bg-gray-800/80"
+                  >
+                    <div className="rounded-lg bg-blue-100 p-2 group-hover:bg-blue-200 dark:bg-blue-900/50 dark:group-hover:bg-blue-900/70">
+                      <Globe className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                    </div>
+                    <div>
+                      <div className="font-medium text-gray-900 dark:text-white">OpenStreetMap</div>
+                      <div className="text-xs text-gray-600 dark:text-gray-400">View in OSM</div>
+                    </div>
+                  </a>
+                </div>
               </div>
             </div>
-          </div>
+          )}
         </div>
-      )}
+      </div>
     </div>
   )
 }
