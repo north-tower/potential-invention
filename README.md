@@ -1,70 +1,212 @@
-# Getting Started with Create React App
+# Tiempo Aplicación - Modern Weather App
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+A beautiful, modern weather application built with Next.js, TypeScript, and Tailwind CSS. Features detailed weather forecasts, air quality monitoring, weather maps, and real-time alerts.
 
-## Available Scripts
+## ✨ Features
 
-In the project directory, you can run:
+- **Current Weather**: Real-time weather data with beautiful UI
+- **5-Day Forecast**: Detailed hourly and daily forecasts
+- **Air Quality Monitoring**: AQI and pollutant concentration data
+- **Weather Alerts**: Real-time weather warnings and advisories
+- **Interactive Maps**: Weather visualization with multiple layers
+- **Search & Geolocation**: Find weather for any location worldwide
+- **Dark Mode**: Beautiful dark/light theme switching
+- **Responsive Design**: Works perfectly on all devices
+- **Modern UI/UX**: Smooth animations and micro-interactions
 
-### `npm start`
+## 🚀 Getting Started
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+### Prerequisites
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+- Node.js 18+ 
+- npm or yarn
+- OpenWeatherMap API key (free)
 
-### `npm test`
+### Installation
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+1. **Clone the repository**
+   ```bash
+   git clone <your-repo-url>
+   cd Tiempo-Aplicacion
+   ```
 
-### `npm run build`
+2. **Install dependencies**
+   ```bash
+   npm install
+   # or
+   yarn install
+   ```
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+3. **Set up environment variables**
+   
+   Create a `.env.local` file in the root directory:
+   ```env
+   NEXT_PUBLIC_OPENWEATHER_API_KEY=your_api_key_here
+   ```
+   
+   Get your free API key from [OpenWeatherMap](https://openweathermap.org/api)
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+4. **Run the development server**
+   ```bash
+   npm run dev
+   # or
+   yarn dev
+   ```
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+5. **Open your browser**
+   
+   Navigate to [http://localhost:3000](http://localhost:3000)
 
-### `npm run eject`
+## 🛠️ Tech Stack
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+- **Framework**: Next.js 14 with App Router
+- **Language**: TypeScript
+- **Styling**: Tailwind CSS
+- **Icons**: Heroicons
+- **Animations**: Framer Motion
+- **Maps**: Leaflet (optional)
+- **Date Handling**: date-fns
+- **HTTP Client**: Axios
+- **Notifications**: React Hot Toast
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+## 📱 Features Overview
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+### Weather Search
+- Smart search with autocomplete suggestions
+- Geolocation support
+- Search history and favorites
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+### Current Weather
+- Real-time temperature and conditions
+- Feels-like temperature
+- Wind speed and direction
+- Humidity and pressure
+- Visibility
+- Sunrise/sunset times
+- Air quality index
 
-## Learn More
+### 5-Day Forecast
+- Daily weather overview
+- Hourly breakdown
+- Temperature highs and lows
+- Weather conditions
+- Wind patterns
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+### Air Quality
+- Air Quality Index (AQI)
+- Pollutant concentrations (PM2.5, PM10, NO₂, O₃, SO₂, CO)
+- Health recommendations
+- Color-coded severity levels
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+### Weather Alerts
+- Real-time weather warnings
+- Severity classification
+- Detailed descriptions
+- Safety recommendations
 
-### Code Splitting
+### Interactive Maps
+- Weather visualization
+- Multiple map layers
+- Temperature overlays
+- Precipitation maps
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+## 🎨 Design Features
 
-### Analyzing the Bundle Size
+- **Modern UI**: Clean, minimalist design
+- **Dark Mode**: Automatic system theme detection
+- **Responsive**: Mobile-first design approach
+- **Animations**: Smooth transitions and micro-interactions
+- **Accessibility**: WCAG compliant components
+- **Performance**: Optimized loading and caching
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+## 🚀 Deployment
 
-### Making a Progressive Web App
+### Vercel (Recommended)
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+1. **Push to GitHub**
+   ```bash
+   git add .
+   git commit -m "Initial commit"
+   git push origin main
+   ```
 
-### Advanced Configuration
+2. **Deploy to Vercel**
+   - Go to [vercel.com](https://vercel.com)
+   - Import your GitHub repository
+   - Add environment variables
+   - Deploy!
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
+### Other Platforms
 
-### Deployment
+The app can be deployed to any platform that supports Next.js:
+- Netlify
+- AWS Amplify
+- Railway
+- Render
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
+## 🔧 Configuration
 
-### `npm run build` fails to minify
+### Environment Variables
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+| Variable | Description | Required |
+|----------|-------------|----------|
+| `NEXT_PUBLIC_OPENWEATHER_API_KEY` | OpenWeatherMap API key | Yes |
+
+### Customization
+
+- **Colors**: Modify `tailwind.config.js`
+- **Components**: Update components in `src/components/`
+- **API**: Extend `src/services/weatherService.ts`
+- **Types**: Add types in `src/types/weather.ts`
+
+## 📊 API Usage
+
+This app uses the OpenWeatherMap API with the following endpoints:
+
+### ✅ **Free Tier Available (No Credit Card Required):**
+- **Current Weather API** - Real-time weather data
+- **5-Day Weather Forecast API** - 3-hour forecasts for 5 days
+- **Air Pollution API** - Air quality and pollutant data
+- **Geocoding API** - Location search and coordinates
+- **UV Index API** - UV radiation data
+
+### ⚠️ **Paid Tier Required:**
+- **One Call API 3.0** - Weather alerts (1,000 free calls/day with credit card)
+- **Weather Maps** - Interactive map tiles
+
+### 📈 **Free Tier Limits:**
+- 60 API calls per minute
+- 1,000,000 calls per month
+- All core weather features included
+
+**Note:** Weather alerts require a paid subscription, but the app gracefully handles this by showing a message when alerts aren't available.
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Add tests if applicable
+5. Submit a pull request
+
+## 📄 License
+
+This project is licensed under the MIT License.
+
+## 🙏 Acknowledgments
+
+- [OpenWeatherMap](https://openweathermap.org/) for weather data
+- [Heroicons](https://heroicons.com/) for beautiful icons
+- [Tailwind CSS](https://tailwindcss.com/) for styling
+- [Next.js](https://nextjs.org/) for the amazing framework
+
+## 📞 Support
+
+If you have any questions or need help, please:
+- Open an issue on GitHub
+- Check the documentation
+- Contact the maintainers
+
+---
+
+**Enjoy your new modern weather app! 🌤️**
