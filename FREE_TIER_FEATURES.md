@@ -1,4 +1,4 @@
-# 🌤️ Free Tier Features - OpenWeatherMap API
+# 🌤️ Free Tier Features - OpenWeatherMap APIs
 
 ## ✅ **What's Included in the FREE Tier (No Credit Card Required)**
 
