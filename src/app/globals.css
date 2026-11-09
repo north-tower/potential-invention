@@ -22,6 +22,7 @@
 @layer base {
   html {
     background: var(--paper);
+    overflow-x: clip;
   }
 
   body {
@@ -30,6 +31,8 @@
     font-family: var(--font-sans), system-ui, sans-serif;
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
+    overflow-x: clip;
+    touch-action: manipulation;
   }
 
   ::selection {
@@ -53,6 +56,18 @@
 }
 
 @layer components {
+  .bento-grid {
+    @apply grid grid-cols-1 gap-4 sm:gap-5 lg:grid-cols-12 lg:gap-5 lg:items-start;
+  }
+
+  .bento-cell {
+    @apply min-w-0;
+  }
+
+  .bento-panel {
+    @apply rounded-atmos border border-line bg-snow px-5 py-5 sm:px-6 sm:py-6;
+  }
+
   .atmos-label {
     font-size: 10px;
     letter-spacing: 0.22em;

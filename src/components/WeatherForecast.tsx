@@ -31,20 +31,26 @@ export function WeatherForecast({ current, data, unit, onUnitChange }: WeatherFo
       <section>
         <div className="mb-4 flex items-end justify-between">
           <h3 className="atmos-label">The next hours</h3>
-          <div className="flex items-center gap-1 text-[11px] tracking-[0.16em] text-ink-muted">
+          <div className="flex items-center gap-0.5 text-[11px] tracking-[0.16em] text-ink-muted">
             <button
               type="button"
               onClick={() => onUnitChange('C')}
-              className={unit === 'C' ? 'text-ink' : 'hover:text-ink'}
+              className={`flex min-h-11 min-w-11 items-center justify-center rounded-md ${
+                unit === 'C' ? 'text-ink' : 'hover:text-ink'
+              }`}
               aria-pressed={unit === 'C'}
             >
               °C
             </button>
-            <span className="text-ink-faint">/</span>
+            <span className="text-ink-faint" aria-hidden>
+              /
+            </span>
             <button
               type="button"
               onClick={() => onUnitChange('F')}
-              className={unit === 'F' ? 'text-ink' : 'hover:text-ink'}
+              className={`flex min-h-11 min-w-11 items-center justify-center rounded-md ${
+                unit === 'F' ? 'text-ink' : 'hover:text-ink'
+              }`}
               aria-pressed={unit === 'F'}
             >
               °F
@@ -88,7 +94,10 @@ export function WeatherForecast({ current, data, unit, onUnitChange }: WeatherFo
             const left = ((day.min - rangeMin) / span) * 100
             const width = ((day.max - day.min) / span) * 100
             return (
-              <li key={day.label + day.date.toISOString()} className="grid grid-cols-[42px_1fr_auto] items-center gap-3 py-3.5">
+              <li
+                key={day.label + day.date.toISOString()}
+                className="grid grid-cols-1 gap-2 py-3.5 sm:grid-cols-[42px_1fr_auto] sm:items-center sm:gap-3"
+              >
                 <span className="text-[15px] text-ink">{day.label}</span>
                 <div className="flex min-w-0 items-center gap-3">
                   <WeatherGlyph
@@ -101,8 +110,8 @@ export function WeatherForecast({ current, data, unit, onUnitChange }: WeatherFo
                     {conditionTitle(day.item.weather[0].description)}
                   </span>
                 </div>
-                <div className="flex items-center gap-3">
-                  <span className="w-8 text-right text-[15px] text-ink">
+                <div className="flex items-center justify-between gap-3 sm:justify-end">
+                  <span className="w-8 text-right text-[15px] text-ink sm:text-right">
                     {toDisplayTemp(day.max, unit)}°
                   </span>
                   <div className="relative h-[3px] w-16 overflow-hidden rounded-full bg-paper-3 sm:w-24">

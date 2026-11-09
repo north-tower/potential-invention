@@ -137,7 +137,7 @@ export function WeatherMap({
 
   return (
     <section className="flex h-full flex-col">
-      <header className="mb-8 flex items-center justify-between gap-3">
+      <header className="mb-8 flex flex-wrap items-center justify-between gap-3">
         <AtmosMark />
         <WeatherSearch
           currentName={weatherData.name}
@@ -279,11 +279,11 @@ export function WeatherMap({
           <Clock className="h-4 w-4 text-ink-faint" strokeWidth={1.5} />
         </div>
 
-        <div className="grid grid-cols-[1fr_auto] items-start gap-6">
+        <div className="flex flex-col gap-6 sm:grid sm:grid-cols-[1fr_auto] sm:items-start">
           <div>
             <div className="flex items-start gap-3">
               <div className="flex items-start">
-                <span className="text-[64px] font-light leading-none tracking-tight">
+                <span className="text-[clamp(2.75rem,14vw,4rem)] font-light leading-none tracking-tight">
                   {toDisplayTemp(weatherData.main.temp, unit)}
                 </span>
                 <span className="mt-1 text-sm">°{unit}</span>
@@ -357,7 +357,7 @@ function IconBtn({
       type="button"
       onClick={onClick}
       aria-label={label}
-      className={`flex h-8 w-8 items-center justify-center rounded-md border bg-snow text-ink transition hover:bg-paper-2 ${
+      className={`flex h-11 w-11 items-center justify-center rounded-md border bg-snow text-ink transition hover:bg-paper-2 ${
         active ? 'border-ink/40' : 'border-line'
       }`}
     >

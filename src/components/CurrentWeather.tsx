@@ -80,7 +80,7 @@ export function CurrentWeather({
             type="button"
             onClick={onGeolocation}
             disabled={loading}
-            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-white/10 text-snow/70 transition hover:border-white/25 hover:text-snow disabled:opacity-50"
+            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-white/10 text-snow/70 transition hover:border-white/25 hover:text-snow disabled:opacity-50"
             aria-label="Use my location"
           >
             <Crosshair className="h-4 w-4" strokeWidth={1.5} />
@@ -90,7 +90,7 @@ export function CurrentWeather({
         <div className="mb-6 flex items-start justify-between gap-4">
           <div>
             <div className="flex items-start">
-              <span className="text-[88px] font-light leading-none tracking-tight">
+              <span className="text-[clamp(3.5rem,18vw,5.5rem)] font-light leading-none tracking-tight">
                 {toDisplayTemp(data.main.temp, unit)}
               </span>
               <span className="mt-2 text-lg font-normal text-snow/80">°{unit}</span>
