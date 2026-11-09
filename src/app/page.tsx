@@ -1,50 +1,48 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { Header } from '@/components/Header'
-import { WeatherSearch } from '@/components/WeatherSearch'
 import { CurrentWeather } from '@/components/CurrentWeather'
 import { WeatherForecast } from '@/components/WeatherForecast'
 import { WeatherMap } from '@/components/WeatherMap'
-import { AirQuality } from '@/components/AirQuality'
-import { WeatherAlerts } from '@/components/WeatherAlerts'
 import { LoadingSpinner } from '@/components/LoadingSpinner'
 import { ErrorBoundary } from '@/components/ErrorBoundary'
 import { Footer } from '@/components/Footer'
 import { WeatherService } from '@/services/weatherService'
-import { WeatherData, ForecastData, AirQualityData, AlertData } from '@/types/weather'
+import { ForecastData, WeatherData } from '@/types/weather'
+import { cityDate, formatClock, formatWeekday, Unit } from '@/lib/atmos'
+import { sampleForecast, sampleWeather } from '@/lib/sampleWeather'
 import toast from 'react-hot-toast'
+
+const hasApiKey = Boolean(process.env.NEXT_PUBLIC_OPENWEATHER_API_KEY)
 
 export default function Home() {
   const [weatherData, setWeatherData] = useState<WeatherData | null>(null)
   const [forecastData, setForecastData] = useState<ForecastData | null>(null)
-  const [airQualityData, setAirQualityData] = useState<AirQualityData | null>(null)
-  const [alertsData, setAlertsData] = useState<AlertData[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [currentLocation, setCurrentLocation] = useState('Nairobi')
-
+  const [unit, setUnit] = useState<Unit>('C')
   const weatherService = new WeatherService()
 
   const fetchWeatherData = async (location: string) => {
+    if (!hasApiKey) {
+      setWeatherData({ ...sampleWeather, name: location.split(',')[0] || sampleWeather.name })
+      setForecastData(sampleForecast)
+      setError(null)
+      return
+    }
+
     setLoading(true)
     setError(null)
-    
+
     try {
-      const [weather, forecast, airQuality, alerts] = await Promise.all([
+      const [weather, forecast] = await Promise.all([
         weatherService.getCurrentWeather(location),
         weatherService.getForecast(location),
-        weatherService.getAirQuality(location),
-        weatherService.getWeatherAlerts(location)
       ])
 
       setWeatherData(weather)
       setForecastData(forecast)
-      setAirQualityData(airQuality)
-      setAlertsData(alerts)
-      setCurrentLocation(location)
-      
-      toast.success(`Weather data loaded for ${location}`)
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to fetch weather data'
       setError(errorMessage)
@@ -52,10 +50,6 @@ export default function Home() {
     } finally {
       setLoading(false)
     }
-  }
-
-  const handleLocationSearch = (location: string) => {
-    fetchWeatherData(location)
   }
 
   const handleGeolocation = async () => {
@@ -71,12 +65,12 @@ export default function Home() {
           const { latitude, longitude } = position.coords
           const location = await weatherService.getLocationFromCoords(latitude, longitude)
           await fetchWeatherData(location)
-        } catch (err) {
+        } catch {
           toast.error('Failed to get location from coordinates')
           setLoading(false)
         }
       },
-      (error) => {
+      () => {
         toast.error('Failed to get your location')
         setLoading(false)
       }
@@ -84,68 +78,74 @@ export default function Home() {
   }
 
   useEffect(() => {
-    fetchWeatherData('Nairobi')
+    const stored = window.localStorage.getItem('atmos-unit')
+    if (stored === 'C' || stored === 'F') setUnit(stored)
+    fetchWeatherData('San Francisco')
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
+  const handleUnitChange = (next: Unit) => {
+    setUnit(next)
+    window.localStorage.setItem('atmos-unit', next)
+  }
+
+  const localNow = weatherData ? cityDate(weatherData.timezone, weatherData.dt) : new Date()
+  const timeLabel = `${formatWeekday(localNow)}  ·  ${formatClock(localNow)}`
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-blue-100 to-blue-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
-      <Header />
-      
-      <main className="container mx-auto px-4 py-8">
+    <div className="min-h-[100dvh] bg-paper">
+      <main className="mx-auto max-w-[1080px] px-4 py-6 sm:px-6 sm:py-10">
         <ErrorBoundary>
-          <div className="space-y-8">
-            {/* Search Section */}
-            <WeatherSearch 
-              onSearch={handleLocationSearch}
-              onGeolocation={handleGeolocation}
-              loading={loading}
-            />
+          {loading && !weatherData && <LoadingSpinner />}
 
-            {loading && <LoadingSpinner />}
+          {error && !weatherData && (
+            <div className="rounded-atmos border border-line bg-snow px-5 py-5 text-sm text-ink">
+              {error}
+            </div>
+          )}
 
-            {error && (
-              <div className="weather-card bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800">
-                <div className="flex items-center space-x-3">
-                  <div className="w-6 h-6 text-red-500">⚠️</div>
-                  <p className="text-red-700 dark:text-red-300">{error}</p>
-                </div>
-              </div>
-            )}
+          {!hasApiKey && (
+            <p className="mb-6 text-[12px] tracking-[0.04em] text-ink-muted">
+              Sample briefing. Add NEXT_PUBLIC_OPENWEATHER_API_KEY for live conditions.
+            </p>
+          )}
 
-            {weatherData && !loading && (
-              <>
-                {/* Current Weather */}
-                <CurrentWeather 
-                  data={weatherData} 
-                  airQuality={airQualityData}
+          {weatherData && (
+            <div className="grid items-start gap-12 lg:grid-cols-2 lg:gap-16">
+              <div>
+                <Header timeLabel={timeLabel} />
+                <CurrentWeather
+                  data={weatherData}
+                  unit={unit}
+                  loading={loading}
+                  onSearch={fetchWeatherData}
+                  onGeolocation={handleGeolocation}
                 />
-
-                {/* Weather Alerts */}
-                {/* <WeatherAlerts alerts={alertsData} /> */}
-
-                {/* Forecast */}
                 {forecastData && (
-                  <WeatherForecast data={forecastData} />
+                  <div className="mt-10">
+                    <WeatherForecast
+                      current={weatherData}
+                      data={forecastData}
+                      unit={unit}
+                      onUnitChange={handleUnitChange}
+                    />
+                  </div>
                 )}
+              </div>
 
-                {/* Air Quality */}
-                {airQualityData && (
-                  <AirQuality data={airQualityData} />
-                )}
-
-                {/* Weather Map */}
-                {/* <WeatherMap 
-                  location={currentLocation}
-                  weatherData={weatherData}
-                /> */}
-              </>
-            )}
-          </div>
+              <WeatherMap
+                weatherData={weatherData}
+                forecastData={forecastData}
+                unit={unit}
+                loading={loading}
+                onSearch={fetchWeatherData}
+                onRefresh={() => fetchWeatherData(`${weatherData.name}, ${weatherData.sys.country}`)}
+              />
+            </div>
+          )}
         </ErrorBoundary>
+        <Footer />
       </main>
-      
-      <Footer />
     </div>
   )
 }
-

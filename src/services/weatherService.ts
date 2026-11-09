@@ -9,9 +9,6 @@ export class WeatherService {
 
   constructor() {
     this.apiKey = process.env.NEXT_PUBLIC_OPENWEATHER_API_KEY || ''
-    if (!this.apiKey) {
-      throw new Error('OpenWeather API key is not configured')
-    }
   }
 
   async getCurrentWeather(location: string): Promise<WeatherData> {

@@ -91,6 +91,7 @@ export interface ForecastItem {
   snow?: {
     '3h'?: number
   }
+  pop?: number
   dt_txt: string
 }
 

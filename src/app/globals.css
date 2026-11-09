@@ -2,143 +2,99 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --paper: #e8e7e3;
+  --paper-2: #dddbd6;
+  --paper-3: #d2d0cb;
+  --ink: #1c1c1a;
+  --ink-soft: #4a4a46;
+  --ink-muted: #8a8a84;
+  --ink-faint: #b3b2ac;
+  --line: #d0cec8;
+  --card: #1c1c1c;
+  --card-mid: #2b2b2b;
+  --snow: #f4f3ef;
+  --toast-bg: #1c1c1c;
+  --toast-color: #f4f3ef;
+  --toast-border: #2e2e2e;
+}
+
 @layer base {
   html {
-    font-family: 'Inter', system-ui, sans-serif;
+    background: var(--paper);
   }
-  
+
   body {
-    @apply bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 transition-colors duration-300;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--font-sans), system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  ::selection {
+    background: var(--ink);
+    color: var(--snow);
+  }
+
+  button {
+    cursor: pointer;
+  }
+
+  button:disabled {
+    cursor: not-allowed;
+  }
+
+  button,
+  a,
+  input {
+    @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink/40 focus-visible:ring-offset-2 focus-visible:ring-offset-paper;
   }
 }
 
 @layer components {
-  .weather-card {
-    @apply bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 border border-gray-200 dark:border-gray-700 transition-all duration-300 hover:shadow-xl;
+  .atmos-label {
+    font-size: 10px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--ink-muted);
+    font-weight: 500;
   }
-  
-  .weather-card.gradient-card {
-    @apply bg-transparent border-transparent;
-  }
-  
-  .weather-gradient {
-    @apply bg-gradient-to-br from-blue-500 via-blue-600 to-blue-700;
-  }
-  
-  .sunny-gradient {
-    @apply bg-gradient-to-br from-yellow-500 via-orange-500 to-red-500;
-  }
-  
-  .cloudy-gradient {
-    @apply bg-gradient-to-br from-gray-500 via-gray-600 to-gray-700;
-  }
-  
-  .rainy-gradient {
-    @apply bg-gradient-to-br from-blue-600 via-blue-700 to-blue-800;
-  }
-  
-  .snowy-gradient {
-    @apply bg-gradient-to-br from-gray-400 via-gray-500 to-gray-600;
-  }
-  
-  .glass-effect {
-    @apply backdrop-blur-md bg-white/10 dark:bg-gray-800/10 border border-white/20 dark:border-gray-700/20;
+
+  .atmos-map-grid {
+    background-image:
+      linear-gradient(to right, rgba(28, 28, 26, 0.05) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(28, 28, 26, 0.05) 1px, transparent 1px);
+    background-size: 48px 48px;
   }
 }
 
 @layer utilities {
-  .text-shadow {
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-  }
-  
-  .text-shadow-lg {
-    text-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
-  }
-  
-  .text-shadow-white {
-    text-shadow: 0 2px 4px rgba(255, 255, 255, 0.8);
+  .font-serif-display {
+    font-family: var(--font-serif), Georgia, serif;
   }
 }
 
-/* Custom scrollbar */
 ::-webkit-scrollbar {
   width: 8px;
+  height: 8px;
 }
 
 ::-webkit-scrollbar-track {
-  @apply bg-gray-100 dark:bg-gray-800;
+  background: var(--paper);
 }
 
 ::-webkit-scrollbar-thumb {
-  @apply bg-gray-300 dark:bg-gray-600 rounded-full;
+  background: var(--paper-3);
+  border-radius: 999px;
 }
 
-::-webkit-scrollbar-thumb:hover {
-  @apply bg-gray-400 dark:bg-gray-500;
-}
-
-/* Loading animation */
-.loading-dots {
-  display: inline-block;
-  position: relative;
-  width: 80px;
-  height: 80px;
-}
-
-.loading-dots div {
-  position: absolute;
-  top: 33px;
-  width: 13px;
-  height: 13px;
-  border-radius: 50%;
-  background: #3b82f6;
-  animation-timing-function: cubic-bezier(0, 1, 1, 0);
-}
-
-.loading-dots div:nth-child(1) {
-  left: 8px;
-  animation: loading-dots1 0.6s infinite;
-}
-
-.loading-dots div:nth-child(2) {
-  left: 8px;
-  animation: loading-dots2 0.6s infinite;
-}
-
-.loading-dots div:nth-child(3) {
-  left: 32px;
-  animation: loading-dots2 0.6s infinite;
-}
-
-.loading-dots div:nth-child(4) {
-  left: 56px;
-  animation: loading-dots3 0.6s infinite;
-}
-
-@keyframes loading-dots1 {
-  0% {
-    transform: scale(0);
-  }
-  100% {
-    transform: scale(1);
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
   }
 }
-
-@keyframes loading-dots3 {
-  0% {
-    transform: scale(1);
-  }
-  100% {
-    transform: scale(0);
-  }
-}
-
-@keyframes loading-dots2 {
-  0% {
-    transform: translate(0, 0);
-  }
-  100% {
-    transform: translate(24px, 0);
-  }
-}
-

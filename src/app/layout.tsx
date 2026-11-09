@@ -1,22 +1,33 @@
 import type { Metadata, Viewport } from 'next'
+import { DM_Sans, Source_Serif_4 } from 'next/font/google'
 import './globals.css'
-import { ThemeProvider } from '@/components/ThemeProvider'
 import { Toaster } from 'react-hot-toast'
 
+const sans = DM_Sans({
+  subsets: ['latin'],
+  variable: '--font-sans',
+  display: 'swap',
+})
+
+const serif = Source_Serif_4({
+  subsets: ['latin'],
+  variable: '--font-serif',
+  display: 'swap',
+})
+
 export const metadata: Metadata = {
-  title: 'Tiempo Aplicación - Modern Weather App',
-  description: 'A beautiful, modern weather application with detailed forecasts, maps, and real-time data.',
-  keywords: ['weather', 'forecast', 'climate', 'meteorology'],
-  authors: [{ name: 'Tiempo Aplicación' }],
+  title: 'ATMOS - Weather',
+  description: 'A quiet monochrome weather briefing with live conditions and precipitation.',
+  keywords: ['weather', 'forecast', 'radar', 'precipitation'],
+  authors: [{ name: 'ATMOS' }],
+  manifest: '/manifest.json',
+  applicationName: 'ATMOS',
 }
 
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
-  themeColor: [
-    { media: '(prefers-color-scheme: light)', color: '#ffffff' },
-    { media: '(prefers-color-scheme: dark)', color: '#111827' }
-  ],
+  themeColor: '#e8e7e3',
 }
 
 export default function RootLayout({
@@ -25,29 +36,24 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en" suppressHydrationWarning>
-      <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
-      </head>
-      <body className="font-inter">
-        <ThemeProvider>
-          {children}
-          <Toaster
-            position="top-right"
-            toastOptions={{
-              duration: 4000,
-              style: {
-                background: 'var(--toast-bg)',
-                color: 'var(--toast-color)',
-                border: '1px solid var(--toast-border)',
-              },
-            }}
-          />
-        </ThemeProvider>
+    <html lang="en" className={`${sans.variable} ${serif.variable}`}>
+      <body className="bg-paper font-sans text-ink antialiased">
+        {children}
+        <Toaster
+          position="top-center"
+          toastOptions={{
+            duration: 3200,
+            style: {
+              background: 'var(--toast-bg)',
+              color: 'var(--toast-color)',
+              border: '1px solid var(--toast-border)',
+              borderRadius: '14px',
+              fontSize: '13px',
+              letterSpacing: '0.01em',
+            },
+          }}
+        />
       </body>
     </html>
   )
 }
-

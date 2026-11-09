@@ -5,49 +5,38 @@ module.exports = {
     './src/components/**/*.{js,ts,jsx,tsx,mdx}',
     './src/app/**/*.{js,ts,jsx,tsx,mdx}',
   ],
-  darkMode: 'class',
   theme: {
     extend: {
       fontFamily: {
-        inter: ['Inter', 'sans-serif'],
+        sans: ['var(--font-sans)', 'system-ui', 'sans-serif'],
+        serif: ['var(--font-serif)', 'Georgia', 'serif'],
       },
       colors: {
-        primary: {
-          50: '#eff6ff',
-          100: '#dbeafe',
-          200: '#bfdbfe',
-          300: '#93c5fd',
-          400: '#60a5fa',
-          500: '#3b82f6',
-          600: '#2563eb',
-          700: '#1d4ed8',
-          800: '#1e40af',
-          900: '#1e3a8a',
+        paper: {
+          DEFAULT: '#e8e7e3',
+          2: '#dddbd6',
+          3: '#d2d0cb',
         },
-        weather: {
-          sunny: '#fbbf24',
-          cloudy: '#6b7280',
-          rainy: '#3b82f6',
-          snowy: '#e5e7eb',
-        }
+        ink: {
+          DEFAULT: '#1c1c1a',
+          soft: '#4a4a46',
+          muted: '#8a8a84',
+          faint: '#b3b2ac',
+        },
+        line: '#d0cec8',
+        card: {
+          DEFAULT: '#1c1c1c',
+          mid: '#2b2b2b',
+        },
+        snow: '#f4f3ef',
       },
-      animation: {
-        'fade-in': 'fadeIn 0.5s ease-in-out',
-        'slide-up': 'slideUp 0.3s ease-out',
-        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+      borderRadius: {
+        atmos: '28px',
       },
-      keyframes: {
-        fadeIn: {
-          '0%': { opacity: '0' },
-          '100%': { opacity: '1' },
-        },
-        slideUp: {
-          '0%': { transform: 'translateY(10px)', opacity: '0' },
-          '100%': { transform: 'translateY(0)', opacity: '1' },
-        },
+      boxShadow: {
+        atmos: '0 24px 50px -28px rgba(28, 28, 26, 0.45)',
       },
     },
   },
   plugins: [],
 }
-
