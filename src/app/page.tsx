@@ -8,10 +8,12 @@ import { WeatherMap } from '@/components/WeatherMap'
 import { LoadingSpinner } from '@/components/LoadingSpinner'
 import { ErrorBoundary } from '@/components/ErrorBoundary'
 import { Footer } from '@/components/Footer'
+import { AirQuality } from '@/components/AirQuality'
+import { WeatherAlerts } from '@/components/WeatherAlerts'
 import { WeatherService } from '@/services/weatherService'
-import { ForecastData, WeatherData } from '@/types/weather'
+import { AirQualityData, AlertData, ForecastData, UVIndexData, WeatherData } from '@/types/weather'
 import { cityDate, formatClock, formatWeekday, Unit } from '@/lib/atmos'
-import { sampleForecast, sampleWeather } from '@/lib/sampleWeather'
+import { sampleAirQuality, sampleForecast, sampleUV, sampleWeather } from '@/lib/sampleWeather'
 import toast from 'react-hot-toast'
 
 const hasApiKey = Boolean(process.env.NEXT_PUBLIC_OPENWEATHER_API_KEY)
@@ -19,6 +21,9 @@ const hasApiKey = Boolean(process.env.NEXT_PUBLIC_OPENWEATHER_API_KEY)
 export default function Home() {
   const [weatherData, setWeatherData] = useState<WeatherData | null>(null)
   const [forecastData, setForecastData] = useState<ForecastData | null>(null)
+  const [airQualityData, setAirQualityData] = useState<AirQualityData | null>(null)
+  const [alertsData, setAlertsData] = useState<AlertData[]>([])
+  const [uvIndex, setUvIndex] = useState<UVIndexData | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [unit, setUnit] = useState<Unit>('C')
@@ -28,6 +33,9 @@ export default function Home() {
     if (!hasApiKey) {
       setWeatherData({ ...sampleWeather, name: location.split(',')[0] || sampleWeather.name })
       setForecastData(sampleForecast)
+      setAirQualityData(sampleAirQuality)
+      setAlertsData([])
+      setUvIndex(sampleUV)
       setError(null)
       return
     }
@@ -36,13 +44,19 @@ export default function Home() {
     setError(null)
 
     try {
-      const [weather, forecast] = await Promise.all([
+      const [weather, forecast, airQuality, alerts, uv] = await Promise.all([
         weatherService.getCurrentWeather(location),
         weatherService.getForecast(location),
+        weatherService.getAirQuality(location),
+        weatherService.getWeatherAlerts(location),
+        weatherService.getUVIndex(location),
       ])
 
       setWeatherData(weather)
       setForecastData(forecast)
+      setAirQualityData(airQuality)
+      setAlertsData(alerts)
+      setUvIndex(uv)
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to fetch weather data'
       setError(errorMessage)
@@ -118,6 +132,8 @@ export default function Home() {
                   data={weatherData}
                   unit={unit}
                   loading={loading}
+                  airQuality={airQualityData}
+                  uvIndex={uvIndex}
                   onSearch={fetchWeatherData}
                   onGeolocation={handleGeolocation}
                 />
@@ -131,6 +147,14 @@ export default function Home() {
                     />
                   </div>
                 )}
+                {airQualityData && (
+                  <div className="mt-10">
+                    <AirQuality data={airQualityData} />
+                  </div>
+                )}
+                <div className="mt-10">
+                  <WeatherAlerts alerts={alertsData} />
+                </div>
               </div>
 
               <WeatherMap

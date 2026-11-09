@@ -1,4 +1,4 @@
-import { ForecastData, WeatherData } from '@/types/weather'
+import { AirQualityData, ForecastData, UVIndexData, WeatherData } from '@/types/weather'
 
 export const sampleWeather: WeatherData = {
   id: 5391959,
@@ -25,6 +25,34 @@ export const sampleWeather: WeatherData = {
 
 const hour = 3600
 const now = Math.floor(Date.now() / 1000)
+
+export const sampleAirQuality: AirQualityData = {
+  coord: { lat: 37.7749, lon: -122.4194 },
+  list: [
+    {
+      main: { aqi: 2 },
+      components: {
+        co: 233.1,
+        no: 0.12,
+        no2: 11.8,
+        o3: 42.6,
+        so2: 0.55,
+        pm2_5: 7.4,
+        pm10: 13.2,
+        nh3: 0.35,
+      },
+      dt: Math.floor(Date.now() / 1000),
+    },
+  ],
+}
+
+export const sampleUV: UVIndexData = {
+  lat: 37.7749,
+  lon: -122.4194,
+  date_iso: new Date().toISOString(),
+  date: Math.floor(Date.now() / 1000),
+  value: 4.2,
+}
 
 export const sampleForecast: ForecastData = {
   city: {

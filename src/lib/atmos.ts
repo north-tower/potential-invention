@@ -204,6 +204,30 @@ export function hourlySlots(current: WeatherData, forecast: ForecastData | null)
   return [nowSlot, ...upcoming]
 }
 
+const AQI_LEVELS = [
+  { level: 'Good', description: 'Air quality is satisfactory' },
+  { level: 'Fair', description: 'Air quality is acceptable for most people' },
+  { level: 'Moderate', description: 'Sensitive groups may notice mild effects' },
+  { level: 'Poor', description: 'Everyone may begin to notice health effects' },
+  { level: 'Very poor', description: 'Consider limiting time outdoors' },
+] as const
+
+export function aqiInfo(aqi: number) {
+  return AQI_LEVELS[Math.min(Math.max(aqi, 1), 5) - 1] ?? AQI_LEVELS[0]
+}
+
+export function aqiBarFraction(aqi: number) {
+  return Math.min(Math.max(aqi, 1), 5) / 5
+}
+
+export function uvBand(value: number) {
+  if (value < 3) return { label: 'Low', note: 'Minimal protection needed' }
+  if (value < 6) return { label: 'Moderate', note: 'Seek shade around midday' }
+  if (value < 8) return { label: 'High', note: 'Protection recommended' }
+  if (value < 11) return { label: 'Very high', note: 'Extra protection advised' }
+  return { label: 'Extreme', note: 'Avoid midday sun if possible' }
+}
+
 export function latLonToWorld(lat: number, lon: number, zoom: number) {
   const n = 2 ** zoom
   const x = ((lon + 180) / 360) * n
