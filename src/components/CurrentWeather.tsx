@@ -54,7 +54,7 @@ export function CurrentWeather({
   const visibilityKm = (data.visibility / 1000).toFixed(1)
 
   return (
-    <section className="relative overflow-hidden rounded-atmos bg-card px-5 pb-5 pt-5 text-snow shadow-atmos sm:px-6 sm:pb-6 sm:pt-6">
+    <section className="relative h-full overflow-hidden rounded-atmos bg-card px-5 pb-5 pt-5 text-snow shadow-atmos sm:px-6 sm:pb-6 sm:pt-6">
       <div
         className="pointer-events-none absolute inset-0"
         style={{

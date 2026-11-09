@@ -151,6 +151,7 @@ The app can be deployed to any platform that supports Next.js:
 | Variable | Description | Required |
 |----------|-------------|----------|
 | `NEXT_PUBLIC_OPENWEATHER_API_KEY` | OpenWeatherMap API key | Yes |
+| `NEXT_PUBLIC_CARTO_API_KEY` | CARTO basemap API key (optional; defaults to OpenStreetMap) | No |
 
 ### Customization
 

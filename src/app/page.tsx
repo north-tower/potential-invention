@@ -130,7 +130,7 @@ export default function Home() {
                 <Header timeLabel={timeLabel} />
               </header>
 
-              <div className="bento-cell lg:col-span-5 xl:col-span-4">
+              <div className="bento-cell lg:col-span-5 lg:row-span-1 xl:col-span-4">
                 <CurrentWeather
                   data={weatherData}
                   unit={unit}
@@ -142,11 +142,10 @@ export default function Home() {
                 />
               </div>
 
-              <div className="bento-cell lg:col-span-7 xl:col-span-8">
+              <div className="bento-cell bento-panel lg:col-span-7 xl:col-span-8">
                 <WeatherMap
                   weatherData={weatherData}
                   forecastData={forecastData}
-                  unit={unit}
                   loading={loading}
                   onSearch={fetchWeatherData}
                   onRefresh={() => fetchWeatherData(`${weatherData.name}, ${weatherData.sys.country}`)}

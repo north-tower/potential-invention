@@ -1,13 +1,11 @@
 'use client'
 
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
-import { Clock, CloudRain, Layers, LocateFixed, Minus, Plus, RefreshCw, Wind } from 'lucide-react'
+import { CloudRain, Layers, LocateFixed, Minus, Plus, RefreshCw, Wind } from 'lucide-react'
 import { ForecastData, WeatherData } from '@/types/weather'
 import { WeatherSearch } from '@/components/WeatherSearch'
-import { WeatherGlyph } from '@/components/WeatherGlyph'
 import {
   cityDate,
-  conditionTitle,
   editorialHeadline,
   formatClock,
   latLonToWorld,
@@ -15,18 +13,29 @@ import {
   nextPrecip,
   nextShowerCopy,
   rainRateInHr,
-  toDisplayTemp,
-  Unit,
   windCompass,
 } from '@/lib/atmos'
 
 interface WeatherMapProps {
   weatherData: WeatherData
   forecastData: ForecastData | null
-  unit: Unit
   loading: boolean
   onSearch: (location: string) => void
   onRefresh: () => void
+}
+
+function baseMapTileUrl(z: number, x: number, y: number): { src: string; attribution: 'carto' | 'osm' } {
+  const cartoKey = process.env.NEXT_PUBLIC_CARTO_API_KEY
+  if (cartoKey) {
+    return {
+      src: `https://a.basemaps.cartocdn.com/light_nolabels/${z}/${x}/${y}@2x.png?api_key=${cartoKey}`,
+      attribution: 'carto',
+    }
+  }
+  return {
+    src: `https://tile.openstreetmap.org/${z}/${x}/${y}.png`,
+    attribution: 'osm',
+  }
 }
 
 const TILE = 256
@@ -54,7 +63,6 @@ function AtmosMark() {
 export function WeatherMap({
   weatherData,
   forecastData,
-  unit,
   loading,
   onSearch,
   onRefresh,
@@ -119,6 +127,7 @@ export function WeatherMap({
   const translateX = frame.w / 2 - (HALF + fracX) * TILE
   const translateY = frame.h / 2 - (HALF + fracY) * TILE
   const owmKey = process.env.NEXT_PUBLIC_OPENWEATHER_API_KEY || ''
+  const mapAttribution = baseMapTileUrl(zoom, tileX, tileY).attribution
   const rainRate = rainRateInHr(weatherData)
   const next = nextPrecip(forecastData, weatherData.dt)
   const nextTime = next ? formatClock(cityDate(weatherData.timezone, next.dt)) : null
@@ -137,7 +146,7 @@ export function WeatherMap({
 
   return (
     <section className="flex h-full flex-col">
-      <header className="mb-8 flex flex-wrap items-center justify-between gap-3">
+      <header className="mb-6 flex flex-wrap items-center justify-between gap-3">
         <AtmosMark />
         <WeatherSearch
           currentName={weatherData.name}
@@ -148,11 +157,11 @@ export function WeatherMap({
       </header>
 
       <p className="atmos-label mb-3">Precipitation / live composite</p>
-      <h2 className="font-serif-display mb-7 text-[34px] leading-[1.12] tracking-[-0.02em] text-ink sm:text-[40px]">
+      <h2 className="font-serif-display mb-5 text-[30px] leading-[1.12] tracking-[-0.02em] text-ink sm:text-[36px]">
         {editorialHeadline(weatherData.weather[0].main, weatherData.weather[0].description)}
       </h2>
 
-      <div className="relative mb-6 grid grid-cols-[1fr_auto] gap-2 bg-paper-2/70 p-3">
+      <div className="relative mb-5 grid grid-cols-[1fr_auto] gap-2 rounded-xl border border-line bg-paper p-3">
         <div>
           <div className="mb-3 inline-flex items-center gap-2 text-[10px] tracking-[0.18em] text-ink-muted">
             <Layers className="h-3.5 w-3.5" strokeWidth={1.5} />
@@ -170,7 +179,7 @@ export function WeatherMap({
             {tiles.map((tile) => (
               <img
                 key={`base-${tile.x}-${tile.y}`}
-                src={`https://a.basemaps.cartocdn.com/light_nolabels/${zoom}/${tile.x}/${tile.y}@2x.png`}
+                src={baseMapTileUrl(zoom, tile.x, tile.y).src}
                 alt=""
                 width={TILE}
                 height={TILE}
@@ -231,6 +240,9 @@ export function WeatherMap({
             <span className="block text-center leading-none">↑</span>
           </div>
           </div>
+          {mapAttribution === 'osm' && (
+            <p className="mt-2 text-[9px] tracking-[0.06em] text-ink-faint">© OpenStreetMap contributors</p>
+          )}
         </div>
         <div className="flex flex-col gap-1.5 pt-8">
           <IconBtn label="Zoom in" onClick={() => setZoom((z) => Math.min(z + 1, 12))}>
@@ -252,7 +264,7 @@ export function WeatherMap({
         </div>
       </div>
 
-      <div className="mb-8">
+      <div className="mb-5">
         <div className="mb-2 flex items-end justify-between">
           <span className="atmos-label">Rain rate</span>
           <span className="atmos-label">In / hr</span>
@@ -273,69 +285,36 @@ export function WeatherMap({
         <p className="mt-2 text-right text-[10px] text-ink-faint">Composite reflectivity - illustrative</p>
       </div>
 
-      <div className="border-t border-line pt-6">
-        <div className="mb-4 flex items-center justify-between">
-          <h3 className="atmos-label">At your point</h3>
-          <Clock className="h-4 w-4 text-ink-faint" strokeWidth={1.5} />
-        </div>
-
-        <div className="flex flex-col gap-6 sm:grid sm:grid-cols-[1fr_auto] sm:items-start">
-          <div>
-            <div className="flex items-start gap-3">
-              <div className="flex items-start">
-                <span className="text-[clamp(2.75rem,14vw,4rem)] font-light leading-none tracking-tight">
-                  {toDisplayTemp(weatherData.main.temp, unit)}
-                </span>
-                <span className="mt-1 text-sm">°{unit}</span>
-              </div>
-              <WeatherGlyph
-                main={weatherData.weather[0].main}
-                description={weatherData.weather[0].description}
-                className="mt-2 h-10 w-10 text-ink-soft"
-              />
-            </div>
-            <p className="mt-3 text-[15px] text-ink">
-              {conditionTitle(weatherData.weather[0].description)}
+      <div className="grid gap-4 border-t border-line pt-5 sm:grid-cols-2 sm:gap-5">
+        <div className="rounded-xl border border-line bg-paper px-4 py-4">
+          <p className="atmos-label mb-3">Conditions nearby</p>
+          <div className="space-y-2.5 text-[13px]">
+            <p className="flex items-center justify-between gap-4 text-ink-soft">
+              <span className="inline-flex items-center gap-2">
+                <CloudRain className="h-3.5 w-3.5" strokeWidth={1.5} />
+                Precipitation
+              </span>
+              <span className="text-ink">{rainRate.toFixed(2)} in/hr</span>
             </p>
-            <p className="mt-1 text-[12px] text-ink-muted">
-              Feels like {toDisplayTemp(weatherData.main.feels_like, unit)}° · High{' '}
-              {toDisplayTemp(weatherData.main.temp_max, unit)}° / Low{' '}
-              {toDisplayTemp(weatherData.main.temp_min, unit)}°
+            <p className="flex items-center justify-between gap-4 text-ink-soft">
+              <span className="inline-flex items-center gap-2">
+                <Wind className="h-3.5 w-3.5" strokeWidth={1.5} />
+                Wind
+              </span>
+              <span className="text-ink">
+                {msToKmh(weatherData.wind.speed)} km/h {windCompass(weatherData.wind.deg)}
+              </span>
             </p>
           </div>
+        </div>
 
-          <div>
-            <p className="atmos-label mb-3">Conditions nearby</p>
-            <div className="space-y-2 text-[13px]">
-              <p className="flex items-center justify-between gap-6 text-ink-soft">
-                <span className="inline-flex items-center gap-2">
-                  <CloudRain className="h-3.5 w-3.5" strokeWidth={1.5} />
-                  Precipitation
-                </span>
-                <span className="text-ink">{rainRate.toFixed(2)} in/hr</span>
-              </p>
-              <p className="flex items-center justify-between gap-6 text-ink-soft">
-                <span className="inline-flex items-center gap-2">
-                  <Wind className="h-3.5 w-3.5" strokeWidth={1.5} />
-                  Wind
-                </span>
-                <span className="text-ink">
-                  {msToKmh(weatherData.wind.speed)} km/h {windCompass(weatherData.wind.deg)}
-                </span>
-              </p>
-            </div>
+        <div className="rounded-xl border border-line bg-paper px-4 py-4 sm:border-l-2 sm:border-l-ink sm:pl-4">
+          <div className="mb-2 flex items-center justify-between gap-3">
+            <h4 className="atmos-label">Next shower</h4>
+            <span className="text-[12px] text-ink-muted">{nextTime ? `~ ${nextTime}` : 'None due'}</span>
           </div>
+          <p className="text-[13px] leading-relaxed text-ink-soft">{nextShowerCopy(weatherData, next)}</p>
         </div>
-      </div>
-
-      <div className="mt-7 border-l-2 border-ink pl-4">
-        <div className="mb-2 flex items-center justify-between gap-3">
-          <h4 className="atmos-label">Next shower</h4>
-          <span className="text-[12px] text-ink-muted">{nextTime ? `~ ${nextTime}` : 'None due'}</span>
-        </div>
-        <p className="max-w-[46ch] text-[13.5px] leading-relaxed text-ink-soft">
-          {nextShowerCopy(weatherData, next)}
-        </p>
       </div>
     </section>
   )
