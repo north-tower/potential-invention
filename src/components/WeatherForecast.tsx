@@ -25,38 +25,21 @@ export function WeatherForecastHourly({ current, data, unit, onUnitChange }: Wea
     <section>
       <div className="bento-card-header mb-4">
         <h3 className="atmos-label">The next hours</h3>
-        <div className="flex items-center gap-0.5 text-[11px] tracking-[0.16em] text-ink-muted">
-          <button
-            type="button"
-            onClick={() => onUnitChange('C')}
-            className={`flex min-h-11 min-w-11 items-center justify-center rounded-md ${
-              unit === 'C' ? 'text-ink' : 'hover:text-ink'
-            }`}
-            aria-pressed={unit === 'C'}
-          >
+        <div className="atmos-unit-toggle" role="group" aria-label="Temperature unit">
+          <button type="button" onClick={() => onUnitChange('C')} aria-pressed={unit === 'C'}>
             °C
           </button>
-          <span className="text-ink-faint" aria-hidden>
-            /
-          </span>
-          <button
-            type="button"
-            onClick={() => onUnitChange('F')}
-            className={`flex min-h-11 min-w-11 items-center justify-center rounded-md ${
-              unit === 'F' ? 'text-ink' : 'hover:text-ink'
-            }`}
-            aria-pressed={unit === 'F'}
-          >
+          <button type="button" onClick={() => onUnitChange('F')} aria-pressed={unit === 'F'}>
             °F
           </button>
         </div>
       </div>
 
-      <div className="-mx-1 flex gap-1 overflow-x-auto pb-1">
+      <div className="-mx-1 hourly-strip">
         {hours.map((hour, index) => (
           <div
             key={hour.dt}
-            className={`flex min-w-[64px] flex-col items-center rounded-[18px] px-2 py-3 ${
+            className={`hourly-strip__item flex flex-col items-center rounded-[18px] px-2 py-3 ${
               index === 0 ? 'bg-paper-2' : ''
             }`}
           >
