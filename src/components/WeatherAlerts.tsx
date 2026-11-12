@@ -2,7 +2,7 @@
 
 import { AlertData } from '@/types/weather'
 import { format } from 'date-fns'
-import { AlertTriangle, Clock } from 'lucide-react'
+import { Clock } from 'lucide-react'
 
 interface WeatherAlertsProps {
   alerts: AlertData[]
@@ -16,26 +16,25 @@ function alertSeverity(event: string) {
 }
 
 export function WeatherAlerts({ alerts }: WeatherAlertsProps) {
+  if (alerts.length === 0) {
+    return (
+      <div className="flex min-h-8 flex-wrap items-center justify-between gap-x-3 gap-y-1 py-0.5">
+        <h3 className="atmos-label shrink-0">Weather alerts</h3>
+        <p className="text-[12px] text-ink-muted">None active for this location.</p>
+      </div>
+    )
+  }
+
   return (
-    <section className="rounded-atmos border border-line bg-snow px-5 py-5 sm:px-6">
-      <div className="mb-4 flex items-center justify-between gap-3">
+    <section className="bento-panel">
+      <div className="bento-card-header mb-4">
         <h3 className="atmos-label">Weather alerts</h3>
         <span className="rounded-full border border-line px-2.5 py-0.5 text-[10px] tracking-[0.14em] text-ink-muted">
-          {alerts.length > 0 ? `${alerts.length} active` : 'None active'}
+          {alerts.length} active
         </span>
       </div>
 
-      {alerts.length === 0 ? (
-        <div className="rounded-xl border border-dashed border-line bg-paper px-4 py-6 text-center">
-          <AlertTriangle className="mx-auto mb-3 h-8 w-8 text-ink-faint" strokeWidth={1.25} />
-          <p className="text-[14px] text-ink">No weather alerts for this location.</p>
-          <p className="mt-2 max-w-[42ch] mx-auto text-[12px] leading-relaxed text-ink-muted">
-            Government-issued alerts appear here when your OpenWeather plan includes One Call data.
-            Current conditions, forecast, and air quality remain available on the free tier.
-          </p>
-        </div>
-      ) : (
-        <ul className="space-y-3">
+      <ul className="space-y-3">
           {alerts.map((alert, index) => {
             const severity = alertSeverity(alert.event)
             return (
@@ -71,8 +70,7 @@ export function WeatherAlerts({ alerts }: WeatherAlertsProps) {
               </li>
             )
           })}
-        </ul>
-      )}
+      </ul>
     </section>
   )
 }

@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { Header } from '@/components/Header'
 import { CurrentWeather } from '@/components/CurrentWeather'
-import { WeatherForecast } from '@/components/WeatherForecast'
+import { WeatherForecastDaily, WeatherForecastHourly } from '@/components/WeatherForecast'
 import { WeatherMap } from '@/components/WeatherMap'
 import { LoadingSpinner } from '@/components/LoadingSpinner'
 import { ErrorBoundary } from '@/components/ErrorBoundary'
@@ -108,7 +108,7 @@ export default function Home() {
 
   return (
     <div className="min-h-[100dvh] bg-paper">
-      <main className="mx-auto max-w-[1180px] px-4 py-6 sm:px-6 sm:py-10">
+      <main className="mx-auto max-w-[1280px] px-4 py-6 sm:px-6 sm:py-10">
         <ErrorBoundary>
           {loading && !weatherData && <LoadingSpinner />}
 
@@ -125,54 +125,76 @@ export default function Home() {
           )}
 
           {weatherData && (
-            <div className="bento-grid">
-              <header className="bento-cell lg:col-span-12">
-                <Header timeLabel={timeLabel} />
-              </header>
+            <>
+              <Header timeLabel={timeLabel} />
 
-              <div className="bento-cell lg:col-span-5 lg:row-span-1 xl:col-span-4">
-                <CurrentWeather
-                  data={weatherData}
-                  unit={unit}
-                  loading={loading}
-                  airQuality={airQualityData}
-                  uvIndex={uvIndex}
-                  onSearch={fetchWeatherData}
-                  onGeolocation={handleGeolocation}
-                />
-              </div>
+              <div className="bento-grid">
+                <div
+                  className={`bento-cell max-lg:order-1 lg:col-span-12 ${
+                    alertsData.length === 0 ? 'max-md:hidden' : ''
+                  }`}
+                >
+                  <WeatherAlerts alerts={alertsData} />
+                </div>
 
-              <div className="bento-cell bento-panel lg:col-span-7 xl:col-span-8">
-                <WeatherMap
-                  weatherData={weatherData}
-                  forecastData={forecastData}
-                  loading={loading}
-                  onSearch={fetchWeatherData}
-                  onRefresh={() => fetchWeatherData(`${weatherData.name}, ${weatherData.sys.country}`)}
-                />
-              </div>
+                <div className="bento-cell max-lg:contents lg:col-span-5 lg:flex lg:flex-col lg:gap-6 lg:min-h-0">
+                  <div
+                    className={`min-h-0 max-lg:order-2 md:max-lg:order-2 lg:min-h-0 ${
+                      airQualityData ? 'md:col-span-1' : 'md:col-span-2'
+                    }`}
+                  >
+                    <CurrentWeather
+                      data={weatherData}
+                      unit={unit}
+                      loading={loading}
+                      airQuality={airQualityData}
+                      uvIndex={uvIndex}
+                      onSearch={fetchWeatherData}
+                      onGeolocation={handleGeolocation}
+                    />
+                  </div>
 
-              {forecastData && (
-                <div className="bento-cell bento-panel lg:col-span-12">
-                  <WeatherForecast
-                    current={weatherData}
-                    data={forecastData}
-                    unit={unit}
-                    onUnitChange={handleUnitChange}
+                  {airQualityData && (
+                    <div className="min-h-0 max-lg:order-6 md:max-lg:order-3 md:col-span-1 lg:min-h-0">
+                      <AirQuality data={airQualityData} />
+                    </div>
+                  )}
+                </div>
+
+                <div className="bento-cell bento-panel flex h-full min-h-0 flex-col max-lg:order-3 md:max-lg:order-4 md:col-span-2 lg:col-span-7">
+                  <WeatherMap
+                    weatherData={weatherData}
+                    forecastData={forecastData}
+                    loading={loading}
+                    onSearch={fetchWeatherData}
+                    onRefresh={() =>
+                      fetchWeatherData(`${weatherData.name}, ${weatherData.sys.country}`)
+                    }
                   />
                 </div>
-              )}
 
-              {airQualityData && (
-                <div className="bento-cell lg:col-span-6">
-                  <AirQuality data={airQualityData} />
-                </div>
-              )}
+                {forecastData && (
+                  <>
+                    <div className="bento-cell bento-panel max-lg:order-4 md:max-lg:order-5 md:col-span-2 lg:col-span-12">
+                      <WeatherForecastHourly
+                        current={weatherData}
+                        data={forecastData}
+                        unit={unit}
+                        onUnitChange={handleUnitChange}
+                      />
+                    </div>
 
-              <div className={`bento-cell ${airQualityData ? 'lg:col-span-6' : 'lg:col-span-12'}`}>
-                <WeatherAlerts alerts={alertsData} />
+                    <div className="bento-cell bento-panel max-lg:order-5 md:max-lg:order-6 md:col-span-2 lg:col-span-12">
+                      <WeatherForecastDaily
+                        current={weatherData}
+                        data={forecastData}
+                        unit={unit}
+                      />
+                    </div>
+                  </>
+                )}
               </div>
-            </div>
+            </>
           )}
         </ErrorBoundary>
         <Footer />

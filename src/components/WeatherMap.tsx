@@ -145,7 +145,7 @@ export function WeatherMap({
   }, [lat, lon, rainRate, next])
 
   return (
-    <section className="flex h-full flex-col">
+    <section className="flex h-full min-h-0 flex-col">
       <header className="mb-6 flex flex-wrap items-center justify-between gap-3">
         <AtmosMark />
         <WeatherSearch
@@ -157,17 +157,17 @@ export function WeatherMap({
       </header>
 
       <p className="atmos-label mb-3">Precipitation / live composite</p>
-      <h2 className="font-serif-display mb-5 text-[30px] leading-[1.12] tracking-[-0.02em] text-ink sm:text-[36px]">
+      <h2 className="font-serif-display mb-5 shrink-0 text-[30px] leading-[1.12] tracking-[-0.02em] text-ink sm:text-[36px]">
         {editorialHeadline(weatherData.weather[0].main, weatherData.weather[0].description)}
       </h2>
 
-      <div className="relative mb-5 grid grid-cols-[1fr_auto] gap-2 rounded-xl border border-line bg-paper p-3">
-        <div>
+      <div className="relative mb-5 grid min-h-0 flex-1 grid-cols-[1fr_auto] gap-2 self-stretch rounded-xl border border-line bg-paper p-3">
+        <div className="flex min-h-[320px] min-w-0 flex-1 flex-col">
           <div className="mb-3 inline-flex items-center gap-2 text-[10px] tracking-[0.18em] text-ink-muted">
             <Layers className="h-3.5 w-3.5" strokeWidth={1.5} />
             Precipitation layer
           </div>
-          <div ref={frameRef} className="atmos-map-grid relative h-[280px] overflow-hidden bg-[#efece6] sm:h-[320px]">
+          <div ref={frameRef} className="atmos-map-grid relative min-h-[320px] flex-1 overflow-hidden bg-[#efece6]">
           <div
             className="absolute left-0 top-0 will-change-transform"
             style={{

@@ -17,6 +17,14 @@
   --toast-bg: #1c1c1c;
   --toast-color: #f4f3ef;
   --toast-border: #2e2e2e;
+  --atmos-page-gap: 1rem;
+  --atmos-page-gap-lg: 1.5rem;
+  --atmos-card-radius: 28px;
+  --atmos-card-padding-x: 1.25rem;
+  --atmos-card-padding-y: 1.25rem;
+  --atmos-card-padding-x-md: 1.5rem;
+  --atmos-card-padding-y-md: 1.5rem;
+  --atmos-card-header-min-h: 1.25rem;
 }
 
 @layer base {
@@ -57,7 +65,14 @@
 
 @layer components {
   .bento-grid {
-    @apply grid grid-cols-1 gap-4 sm:gap-5 lg:grid-cols-12 lg:gap-5 lg:items-start;
+    gap: var(--atmos-page-gap);
+    @apply grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 lg:items-stretch;
+  }
+
+  @media (min-width: 1024px) {
+    .bento-grid {
+      gap: var(--atmos-page-gap-lg);
+    }
   }
 
   .bento-cell {
@@ -65,7 +80,20 @@
   }
 
   .bento-panel {
-    @apply rounded-atmos border border-line bg-snow px-5 py-5 sm:px-6 sm:py-6;
+    border-radius: var(--atmos-card-radius);
+    padding: var(--atmos-card-padding-y) var(--atmos-card-padding-x);
+    @apply border border-line bg-snow;
+  }
+
+  @media (min-width: 640px) {
+    .bento-panel {
+      padding: var(--atmos-card-padding-y-md) var(--atmos-card-padding-x-md);
+    }
+  }
+
+  .bento-card-header {
+    min-height: var(--atmos-card-header-min-h);
+    @apply flex items-end justify-between;
   }
 
   .atmos-label {
