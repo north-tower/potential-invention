@@ -66,9 +66,9 @@ export function WeatherForecastHourly({ current, data, unit, onUnitChange }: Wea
 export function WeatherForecastDaily({ current, data, unit }: Omit<WeatherForecastProps, 'onUnitChange'>) {
   const now = cityDate(current.timezone, current.dt)
   const days = dailySummaries(data, now, current.timezone)
-  const rangeMin = Math.min(...days.map((d) => d.min))
-  const rangeMax = Math.max(...days.map((d) => d.max))
-  const span = Math.max(rangeMax - rangeMin, 1)
+  const weekMin = Math.min(...days.map((d) => d.min))
+  const weekMax = Math.max(...days.map((d) => d.max))
+  const weekSpan = Math.max(weekMax - weekMin, 1)
 
   return (
     <section>
@@ -77,32 +77,47 @@ export function WeatherForecastDaily({ current, data, unit }: Omit<WeatherForeca
         <span className="atmos-label">5 days</span>
       </div>
       <ul className="divide-y divide-line/80">
+        <li
+          className="mb-1 hidden grid-cols-[3.5rem_minmax(0,1fr)_2.5rem_minmax(0,min(280px,100%))_2.5rem] items-center gap-x-3 py-1 sm:grid"
+          aria-hidden
+        >
+          <span />
+          <span />
+          <span className="text-right text-[10px] uppercase tracking-[0.12em] text-ink-faint">Rain</span>
+          <span />
+          <span />
+        </li>
         {days.map((day) => {
-          const left = ((day.min - rangeMin) / span) * 100
-          const width = ((day.max - day.min) / span) * 100
+          const left = ((day.min - weekMin) / weekSpan) * 100
+          const width = ((day.max - day.min) / weekSpan) * 100
+          const popPct = Math.round((day.item.pop ?? 0) * 100)
           return (
             <li
               key={day.label + day.date.toISOString()}
-              className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-x-3 gap-y-2 py-3.5 sm:grid-cols-[3.5rem_minmax(0,1fr)_2.5rem_minmax(0,min(280px,100%))_2.5rem]"
+              className="grid grid-cols-[auto_minmax(0,1fr)_2.25rem] items-center gap-x-3 gap-y-2 py-3.5 sm:grid-cols-[3.5rem_minmax(0,1fr)_2.5rem_minmax(0,min(280px,100%))_2.5rem]"
             >
               <span className="text-[15px] text-ink">{day.label}</span>
-              <div className="flex min-w-0 items-center gap-3">
+              <div className="flex min-w-0 items-center gap-2 sm:gap-3">
                 <WeatherGlyph
                   main={day.item.weather[0].main}
                   description={day.item.weather[0].description}
                   icon={day.item.weather[0].icon}
                   className="h-5 w-5 shrink-0 text-ink-soft"
                 />
-                <span className="hidden truncate text-[14px] text-ink-soft sm:inline">
+                <span className="min-w-0 truncate text-[13px] text-ink-soft sm:text-[14px]">
                   {conditionTitle(day.item.weather[0].description)}
                 </span>
               </div>
-              <span className="text-right text-[12px] text-ink-muted sm:text-[13px]">
-                {Math.round((day.item.pop ?? 0) * 100)}%
+              <span
+                className="text-right text-[12px] tabular-nums text-ink-muted sm:text-[13px]"
+                title="Probability of precipitation"
+              >
+                {popPct}%
               </span>
               <DailyTempRange
                 left={left}
                 width={width}
+                pointDay={day.min === day.max}
                 maxTemp={toDisplayTemp(day.max, unit)}
                 minTemp={toDisplayTemp(day.min, unit)}
               />
@@ -117,11 +132,13 @@ export function WeatherForecastDaily({ current, data, unit }: Omit<WeatherForeca
 function DailyTempRange({
   left,
   width,
+  pointDay,
   maxTemp,
   minTemp,
 }: {
   left: number
   width: number
+  pointDay: boolean
   maxTemp: number
   minTemp: number
 }) {
@@ -131,7 +148,11 @@ function DailyTempRange({
       <div className="relative h-[3px] w-full max-w-[280px] overflow-hidden rounded-full bg-paper-3">
         <div
           className="absolute top-0 h-full rounded-full bg-ink/80"
-          style={{ left: `${left}%`, width: `${Math.max(width, 12)}%` }}
+          style={
+            pointDay
+              ? { left: `calc(${left}% - 1px)`, width: 2 }
+              : { left: `${left}%`, width: `${width}%` }
+          }
         />
       </div>
       <span className="w-8 text-[15px] text-ink-muted">{minTemp}°</span>

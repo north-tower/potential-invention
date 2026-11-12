@@ -2,7 +2,7 @@
 
 import { AirQualityData } from '@/types/weather'
 import { aqiBarFraction, aqiInfo } from '@/lib/atmos'
-import { POLLUTANT_SPECS } from '@/lib/pollutants'
+import { formatPollutantValue, POLLUTANT_SPECS } from '@/lib/pollutants'
 import { Activity, Circle } from 'lucide-react'
 
 interface AirQualityProps {
@@ -39,7 +39,16 @@ export function AirQuality({ data }: AirQualityProps) {
       <ul className="grid gap-2 sm:grid-cols-2">
         {POLLUTANT_SPECS.map((pollutant) => {
           const value = reading.components[pollutant.key]
-          const fill = Math.min((value / pollutant.scale) * 100, 100)
+          const fillPct = Math.min((value / pollutant.scale) * 100, 100)
+          const goodTick = (pollutant.thresholds.good / pollutant.scale) * 100
+          const fairTick = (pollutant.thresholds.fair / pollutant.scale) * 100
+          const valueLabel = formatPollutantValue(value, pollutant.key)
+          const band =
+            value <= pollutant.thresholds.good
+              ? 'good'
+              : value <= pollutant.thresholds.fair
+                ? 'fair'
+                : 'poor'
           return (
             <li
               key={pollutant.key}
@@ -55,9 +64,35 @@ export function AirQuality({ data }: AirQualityProps) {
                   <span className="text-ink-muted"> {pollutant.unit}</span>
                 </span>
               </div>
-              <div className="h-1 overflow-hidden rounded-full bg-paper-3">
-                <div className="h-full rounded-full bg-ink/50" style={{ width: `${fill}%` }} />
+              <div
+                className="relative h-1 overflow-hidden rounded-full bg-paper-3"
+                role="meter"
+                aria-label={`${pollutant.name}: ${valueLabel}, air quality ${band} on local scale`}
+                aria-valuemin={0}
+                aria-valuemax={pollutant.scale}
+                aria-valuenow={value}
+                aria-valuetext={valueLabel}
+              >
+                <span
+                  className="pointer-events-none absolute top-0 z-[1] h-full w-px bg-ink/15"
+                  style={{ left: `${goodTick}%` }}
+                  aria-hidden
+                />
+                <span
+                  className="pointer-events-none absolute top-0 z-[1] h-full w-px bg-ink/15"
+                  style={{ left: `${fairTick}%` }}
+                  aria-hidden
+                />
+                <div
+                  className="relative z-0 h-full rounded-full bg-ink/50"
+                  style={{
+                    width: value > 0 ? `max(${fillPct}%, 2px)` : '0',
+                  }}
+                />
               </div>
+              <p className="sr-only">
+                {pollutant.name} {valueLabel}, within the {band} range for this pollutant
+              </p>
             </li>
           )
         })}

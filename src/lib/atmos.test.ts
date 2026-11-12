@@ -4,6 +4,7 @@ import {
   cloudAdjustedUv,
   headlineFor,
   isRainingNow,
+  rainRateLegendFraction,
   showerPanel,
   todayHiLo,
   uvBand,
@@ -123,6 +124,15 @@ describe('isRainingNow', () => {
   it('detects active precipitation from rain totals', () => {
     expect(isRainingNow(current({ weather: [{ id: 500, main: 'Rain', description: '', icon: '10d' }], rain: { '1h': 0.2 } }))).toBe(true)
     expect(isRainingNow(current({ weather: [{ id: 800, main: 'Clear', description: '', icon: '01d' }] }))).toBe(false)
+  })
+})
+
+describe('rainRateLegendFraction', () => {
+  it('maps log-scale endpoints', () => {
+    expect(rainRateLegendFraction(0)).toBe(0)
+    expect(rainRateLegendFraction(0.01)).toBeCloseTo(0, 5)
+    expect(rainRateLegendFraction(0.25)).toBe(1)
+    expect(rainRateLegendFraction(0.05)).toBeCloseTo(0.5, 2)
   })
 })
 

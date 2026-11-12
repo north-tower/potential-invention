@@ -136,6 +136,20 @@ export function rainRateInHr(data: WeatherData) {
   return mmToIn(mm)
 }
 
+/** Rain-rate legend: log scale from 0.01 to 0.25 in/hr; labels are evenly spaced along the track. */
+export const RAIN_RATE_LEGEND_MIN_IN = 0.01
+export const RAIN_RATE_LEGEND_MAX_IN = 0.25
+export const RAIN_RATE_LEGEND_STOPS = [0.01, 0.05, 0.1, 0.25] as const
+
+export function rainRateLegendFraction(rateInHr: number): number {
+  if (rateInHr <= 0) return 0
+  if (rateInHr >= RAIN_RATE_LEGEND_MAX_IN) return 1
+  const rate = Math.max(rateInHr, RAIN_RATE_LEGEND_MIN_IN)
+  const logMin = Math.log10(RAIN_RATE_LEGEND_MIN_IN)
+  const logMax = Math.log10(RAIN_RATE_LEGEND_MAX_IN)
+  return (Math.log10(rate) - logMin) / (logMax - logMin)
+}
+
 export function nextPrecip(forecast: ForecastData | null, nowUnix: number) {
   if (!forecast) return null
   const upcoming = forecast.list.find((item) => {

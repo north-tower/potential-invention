@@ -10,6 +10,8 @@ import {
   msToKmh,
   nextPrecip,
   rainRateInHr,
+  rainRateLegendFraction,
+  RAIN_RATE_LEGEND_STOPS,
   showerPanel,
   windCompass,
 } from '@/lib/atmos'
@@ -183,7 +185,8 @@ export function WeatherMap({
   const headline = headlineFor(weatherData, hourly)
   const precipPanel = showerPanel(weatherData, hourly)
   const next = nextPrecip(forecastData, weatherData.dt)
-  const markerLeft = Math.min(rainRate / 0.25, 1) * 100
+  const markerLeft = rainRateLegendFraction(rainRate) * 100
+  const rateLabel = rainRate < 0.01 && rainRate > 0 ? '<0.01' : rainRate.toFixed(2)
 
   const blobs = useMemo(() => {
     const intensity = Math.min(Math.max(rainRate / 0.12, next ? 0.45 : 0.12), 1)
@@ -339,20 +342,30 @@ export function WeatherMap({
           <span className="atmos-label">Rain rate</span>
           <span className="atmos-label">In / hr</span>
         </div>
-        <div className="relative h-2 overflow-hidden rounded-full bg-paper-3">
-          <div className="h-full w-full bg-gradient-to-r from-[#d8d6d1] via-[#8d8c87] to-[#2f2f2c]" />
+        <div className="relative h-2 overflow-visible rounded-full bg-paper-3">
+          <div className="h-full w-full overflow-hidden rounded-full bg-gradient-to-r from-[#d8d6d1] via-[#8d8c87] to-[#2f2f2c]" />
           <div
-            className="absolute top-1/2 h-3 w-3 -translate-y-1/2 rounded-full border border-ink bg-snow"
-            style={{ left: `calc(${markerLeft}% - 6px)` }}
+            className="pointer-events-none absolute -top-1 bottom-0 w-0.5 bg-ink"
+            style={{ left: `${markerLeft}%`, transform: 'translateX(-50%)' }}
+            aria-hidden
           />
+          <span
+            className="pointer-events-none absolute -top-5 translate-x-[-50%] text-[10px] tabular-nums text-ink"
+            style={{ left: `${markerLeft}%` }}
+          >
+            {rateLabel}
+          </span>
         </div>
         <div className="mt-1.5 flex justify-between text-[10px] text-ink-muted">
-          <span>0.01</span>
-          <span>0.05</span>
-          <span>0.10</span>
-          <span>0.25+</span>
+          {RAIN_RATE_LEGEND_STOPS.map((stop, index) => (
+            <span key={stop}>
+              {index === RAIN_RATE_LEGEND_STOPS.length - 1 ? '0.25+' : stop.toFixed(2)}
+            </span>
+          ))}
         </div>
-        <p className="mt-2 text-right text-[10px] text-ink-faint">Composite reflectivity - illustrative</p>
+        <p className="mt-2 text-right text-[10px] text-ink-faint">
+          Log scale (in/hr), evenly spaced — composite reflectivity, illustrative
+        </p>
       </div>
 
       <div className="grid gap-4 border-t border-line pt-5 sm:grid-cols-2 sm:gap-5">
