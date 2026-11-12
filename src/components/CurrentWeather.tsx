@@ -1,17 +1,19 @@
 'use client'
 
 import type { ReactNode } from 'react'
-import { AirQualityData, UVIndexData, WeatherData } from '@/types/weather'
+import { AirQualityData, ForecastData, UVIndexData, WeatherData } from '@/types/weather'
 import { WeatherSearch } from '@/components/WeatherSearch'
 import { WeatherGlyph } from '@/components/WeatherGlyph'
 import {
   aqiInfo,
   cityDate,
+  cloudAdjustedUv,
   conditionTitle,
   countryLabel,
   formatClock,
   formatHemisphere,
   msToKmh,
+  todayHiLo,
   toDisplayTemp,
   Unit,
   uvBand,
@@ -21,6 +23,7 @@ import { Crosshair, Droplets, Eye, Gauge, Sun, Sunrise, Sunset, Wind } from 'luc
 
 interface CurrentWeatherProps {
   data: WeatherData
+  forecast: ForecastData | null
   unit: Unit
   loading: boolean
   airQuality?: AirQualityData | null
@@ -31,6 +34,7 @@ interface CurrentWeatherProps {
 
 export function CurrentWeather({
   data,
+  forecast,
   unit,
   loading,
   airQuality,
@@ -48,7 +52,11 @@ export function CurrentWeather({
 
   const aqi =
     airQuality?.list[0]?.main.aqi != null ? aqiInfo(airQuality.list[0].main.aqi) : null
-  const uv = uvIndex ? uvBand(uvIndex.value) : null
+  const todayTemps = todayHiLo(data, forecast)
+  const hiLo = todayTemps ?? { min: data.main.temp_min, max: data.main.temp_max }
+  const adjustedUvi =
+    uvIndex != null ? cloudAdjustedUv(uvIndex.value, data.clouds.all) : null
+  const uv = adjustedUvi != null ? uvBand(adjustedUvi) : null
   const sunrise = formatClock(cityDate(data.timezone, data.sys.sunrise))
   const sunset = formatClock(cityDate(data.timezone, data.sys.sunset))
   const visibilityKm = (data.visibility / 1000).toFixed(1)
@@ -97,9 +105,9 @@ export function CurrentWeather({
             </div>
             <p className="mt-4 text-[17px] text-snow/90">{conditionTitle(weather.description)}</p>
             <p className="mt-1 text-[12px] tracking-wide text-snow/40">
-              H:{toDisplayTemp(data.main.temp_max, unit)}°{' '}
+              H:{toDisplayTemp(hiLo.max, unit)}°{' '}
               <span className="mx-1 text-snow/25">L:</span>
-              {toDisplayTemp(data.main.temp_min, unit)}°
+              {toDisplayTemp(hiLo.min, unit)}°
             </p>
           </div>
           <WeatherGlyph
@@ -138,10 +146,10 @@ export function CurrentWeather({
                 AQI {airQuality!.list[0].main.aqi} · {aqi.level}
               </span>
             )}
-            {uv && uvIndex && (
+            {uv && adjustedUvi != null && (
               <span className="inline-flex items-center gap-1.5 rounded-full border border-white/15 bg-white/5 px-3 py-1.5 text-[11px] text-snow/70">
                 <Sun className="h-3 w-3" strokeWidth={1.5} />
-                UV {uvIndex.value.toFixed(1)} · {uv.label}
+                UV {adjustedUvi.toFixed(1)} · {uv.label}
               </span>
             )}
           </div>

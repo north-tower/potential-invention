@@ -67,11 +67,25 @@ export function conditionTitle(description: string) {
   return description.charAt(0).toUpperCase() + description.slice(1)
 }
 
-export function editorialHeadline(main: string, description: string) {
+const HOUR_SEC = 3600
+
+export function isRainingNow(current: WeatherData) {
+  const mm1h = current.rain?.['1h'] ?? 0
+  const mm3h = current.rain?.['3h'] ?? 0
+  if (mm1h > 0 || mm3h > 0) return true
+  const main = current.weather[0]?.main.toLowerCase() ?? ''
+  return main === 'rain' || main === 'drizzle' || main === 'thunderstorm'
+}
+
+function hourIsWet(item: ForecastItem) {
+  const rainMm = item.rain?.['3h'] ?? 0
+  return rainMm > 0.05 || (item.pop ?? 0) >= 0.35
+}
+
+function dryHeadline(main: string, description: string) {
   const key = main.toLowerCase()
-  if (key === 'rain' || key === 'drizzle') return 'Rain, in its approach.'
   if (key === 'thunderstorm') return 'Storm, close at hand.'
-  if (key === 'snow') return 'Snow, in its approach.'
+  if (key === 'snow') return 'Snow, held light.'
   if (key === 'clear') return 'Clear, for the hour.'
   if (key === 'clouds') {
     if (description.includes('few') || description.includes('scattered')) {
@@ -81,6 +95,40 @@ export function editorialHeadline(main: string, description: string) {
   }
   if (key === 'mist' || key === 'fog' || key === 'haze') return 'Fog, held low.'
   return `${conditionTitle(description)}.`
+}
+
+export function headlineFor(current: WeatherData, hourly: ForecastItem[]) {
+  const main = current.weather[0]?.main ?? ''
+  const description = current.weather[0]?.description ?? ''
+  const key = main.toLowerCase()
+
+  if (isRainingNow(current)) {
+    if (key === 'thunderstorm') return 'Storm, close at hand.'
+    const within12h = hourly.filter(
+      (item) => item.dt >= current.dt && item.dt <= current.dt + 12 * HOUR_SEC
+    )
+    const firstDry = within12h.find((item) => !hourIsWet(item))
+    if (!firstDry) return 'Rain, settled in.'
+    const hoursUntilDry = (firstDry.dt - current.dt) / HOUR_SEC
+    if (hoursUntilDry <= 4) return 'Rain, easing soon.'
+    return 'Rain, settled in.'
+  }
+
+  const upcoming = hourly.filter((item) => item.dt > current.dt)
+  const rainAhead = upcoming.find((item) => hourIsWet(item))
+  if (rainAhead && rainAhead.dt <= current.dt + 12 * HOUR_SEC) {
+    if (key === 'rain' || key === 'drizzle') return 'Rain, in its approach.'
+    if (key === 'snow') return 'Snow, in its approach.'
+    if (key === 'thunderstorm') return 'Storm, close at hand.'
+    return 'Rain, in its approach.'
+  }
+
+  return dryHeadline(main, description)
+}
+
+/** @deprecated Use headlineFor(current, forecast.list) */
+export function editorialHeadline(main: string, description: string) {
+  return dryHeadline(main, description)
 }
 
 export function rainRateInHr(data: WeatherData) {
@@ -99,25 +147,75 @@ export function nextPrecip(forecast: ForecastData | null, nowUnix: number) {
   return upcoming ?? null
 }
 
-export function nextShowerCopy(current: WeatherData, next: ForecastItem | null) {
-  const rainingNow = Boolean(
-    (current.rain?.['1h'] && current.rain['1h'] > 0) ||
-      (current.rain?.['3h'] && current.rain['3h'] > 0)
+export type ShowerPanel = {
+  title: string
+  timeNote: string | null
+  body: string
+}
+
+function forecastNext12h(current: WeatherData, hourly: ForecastItem[]) {
+  return hourly.filter(
+    (item) => item.dt > current.dt && item.dt <= current.dt + 12 * HOUR_SEC
   )
-  if (rainingNow) {
-    return 'A small band is moving across the area. Expect a brief, passing shower.'
+}
+
+export function showerPanel(current: WeatherData, hourly: ForecastItem[]): ShowerPanel {
+  const next12 = forecastNext12h(current, hourly)
+
+  if (isRainingNow(current)) {
+    const firstDry = next12.find((item) => !hourIsWet(item))
+    const allWet = next12.length > 0 && next12.every(hourIsWet)
+
+    if (!firstDry || allWet) {
+      const through =
+        next12.length > 0
+          ? formatClock(cityDate(current.timezone, next12[next12.length - 1].dt))
+          : null
+      return {
+        title: 'Rain continuing',
+        timeNote: through ? `through ${through}` : null,
+        body: through
+          ? 'Precipitation stays in the picture through the next stretch of the day.'
+          : 'No change in the next 12 hours.',
+      }
+    }
+
+    const easingAt = formatClock(cityDate(current.timezone, firstDry.dt))
+    return {
+      title: 'Rain easing',
+      timeNote: `around ${easingAt}`,
+      body: 'Rates should taper as this band moves off. Brief pockets may linger.',
+    }
   }
+
+  const next = nextPrecip({ list: hourly } as ForecastData, current.dt)
   if (!next) {
-    return 'No shower is showing in the next hours.'
+    return {
+      title: 'Next shower',
+      timeNote: 'None due',
+      body: 'No shower is showing in the next hours.',
+    }
   }
-  const hours = Math.max(0, Math.round((next.dt - current.dt) / 3600))
+
+  const nextTime = formatClock(cityDate(current.timezone, next.dt))
+  const hours = Math.max(0, Math.round((next.dt - current.dt) / HOUR_SEC))
+  let body = 'A band is still a way off. The next hours stay mostly dry.'
   if (hours <= 2) {
-    return 'A small band is drifting toward you. Expect a brief, passing shower.'
+    body = 'A small band is drifting toward you. Expect a brief, passing shower.'
+  } else if (hours <= 8) {
+    body = 'Showers look likely later. Keep a window in mind.'
   }
-  if (hours <= 8) {
-    return 'Showers look likely later. Keep a window in mind.'
+
+  return {
+    title: 'Next shower',
+    timeNote: `~ ${nextTime}`,
+    body,
   }
-  return 'A band is still a way off. The next hours stay mostly dry.'
+}
+
+/** @deprecated Use showerPanel */
+export function nextShowerCopy(current: WeatherData, next: ForecastItem | null) {
+  return showerPanel(current, next ? [next] : []).body
 }
 
 export type GlyphKind =
@@ -143,6 +241,14 @@ export function glyphKind(main: string, description = '', icon = ''): GlyphKind 
     return 'partly'
   }
   return 'cloud'
+}
+
+export function todayHiLo(current: WeatherData, forecast: ForecastData | null) {
+  if (!forecast) return null
+  const now = cityDate(current.timezone, current.dt)
+  const days = dailySummaries(forecast, now, current.timezone)
+  if (days.length === 0) return null
+  return { min: days[0].min, max: days[0].max }
 }
 
 export function dailySummaries(forecast: ForecastData, now: Date, timezone: number) {
@@ -218,6 +324,11 @@ export function aqiInfo(aqi: number) {
 
 export function aqiBarFraction(aqi: number) {
   return Math.min(Math.max(aqi, 1), 5) / 5
+}
+
+export function cloudAdjustedUv(clearSkyUvi: number, cloudCoverPercent: number) {
+  const clouds = Math.min(Math.max(cloudCoverPercent, 0), 100) / 100
+  return clearSkyUvi * (1 - 0.75 * clouds ** 3.4)
 }
 
 export function uvBand(value: number) {

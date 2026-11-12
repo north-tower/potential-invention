@@ -129,12 +129,8 @@ export default function Home() {
               <Header timeLabel={timeLabel} />
 
               <div className="bento-grid">
-                <div
-                  className={`bento-cell max-lg:order-1 lg:col-span-12 ${
-                    alertsData.length === 0 ? 'max-md:hidden' : ''
-                  }`}
-                >
-                  <WeatherAlerts alerts={alertsData} />
+                <div className="bento-cell max-lg:order-1 lg:col-span-12">
+                  <WeatherAlerts alerts={alertsData} locationName={weatherData.name} />
                 </div>
 
                 <div className="bento-cell max-lg:contents lg:col-span-5 lg:flex lg:flex-col lg:gap-6 lg:min-h-0">
@@ -145,6 +141,7 @@ export default function Home() {
                   >
                     <CurrentWeather
                       data={weatherData}
+                      forecast={forecastData}
                       unit={unit}
                       loading={loading}
                       airQuality={airQualityData}

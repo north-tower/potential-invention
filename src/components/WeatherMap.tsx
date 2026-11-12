@@ -5,14 +5,12 @@ import { CloudRain, Layers, LocateFixed, Minus, Plus, RefreshCw, Wind } from 'lu
 import { ForecastData, WeatherData } from '@/types/weather'
 import { WeatherSearch } from '@/components/WeatherSearch'
 import {
-  cityDate,
-  editorialHeadline,
-  formatClock,
+  headlineFor,
   latLonToWorld,
   msToKmh,
   nextPrecip,
-  nextShowerCopy,
   rainRateInHr,
+  showerPanel,
   windCompass,
 } from '@/lib/atmos'
 
@@ -181,8 +179,10 @@ export function WeatherMap({
   const owmKey = process.env.NEXT_PUBLIC_OPENWEATHER_API_KEY || ''
   const mapAttribution = baseMapTileUrl(zoom, tileX, tileY).attribution
   const rainRate = rainRateInHr(weatherData)
+  const hourly = forecastData?.list ?? []
+  const headline = headlineFor(weatherData, hourly)
+  const precipPanel = showerPanel(weatherData, hourly)
   const next = nextPrecip(forecastData, weatherData.dt)
-  const nextTime = next ? formatClock(cityDate(weatherData.timezone, next.dt)) : null
   const markerLeft = Math.min(rainRate / 0.25, 1) * 100
 
   const blobs = useMemo(() => {
@@ -210,7 +210,7 @@ export function WeatherMap({
 
       <p className="atmos-label mb-3">Precipitation / live composite</p>
       <h2 className="font-serif-display mb-5 shrink-0 text-[30px] leading-[1.12] tracking-[-0.02em] text-ink sm:text-[36px]">
-        {editorialHeadline(weatherData.weather[0].main, weatherData.weather[0].description)}
+        {headline}
       </h2>
 
       <div className="relative mb-5 grid min-h-0 flex-1 grid-cols-[1fr_auto] gap-2 self-stretch rounded-xl border border-line bg-paper p-3">
@@ -380,10 +380,10 @@ export function WeatherMap({
 
         <div className="rounded-xl border border-line bg-paper px-4 py-4 sm:border-l-2 sm:border-l-ink sm:pl-4">
           <div className="mb-2 flex items-center justify-between gap-3">
-            <h4 className="atmos-label">Next shower</h4>
-            <span className="text-[12px] text-ink-muted">{nextTime ? `~ ${nextTime}` : 'None due'}</span>
+            <h4 className="atmos-label">{precipPanel.title}</h4>
+            <span className="text-[12px] text-ink-muted">{precipPanel.timeNote ?? ''}</span>
           </div>
-          <p className="text-[13px] leading-relaxed text-ink-soft">{nextShowerCopy(weatherData, next)}</p>
+          <p className="text-[13px] leading-relaxed text-ink-soft">{precipPanel.body}</p>
         </div>
       </div>
     </section>

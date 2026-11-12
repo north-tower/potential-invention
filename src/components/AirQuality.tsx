@@ -2,20 +2,12 @@
 
 import { AirQualityData } from '@/types/weather'
 import { aqiBarFraction, aqiInfo } from '@/lib/atmos'
+import { POLLUTANT_SPECS } from '@/lib/pollutants'
 import { Activity, Circle } from 'lucide-react'
 
 interface AirQualityProps {
   data: AirQualityData
 }
-
-const POLLUTANTS = [
-  { key: 'pm2_5' as const, name: 'PM2.5', unit: 'μg/m³', scale: 35 },
-  { key: 'pm10' as const, name: 'PM10', unit: 'μg/m³', scale: 50 },
-  { key: 'no2' as const, name: 'NO₂', unit: 'μg/m³', scale: 200 },
-  { key: 'o3' as const, name: 'O₃', unit: 'μg/m³', scale: 180 },
-  { key: 'so2' as const, name: 'SO₂', unit: 'μg/m³', scale: 150 },
-  { key: 'co' as const, name: 'CO', unit: 'mg/m³', scale: 10 },
-]
 
 export function AirQuality({ data }: AirQualityProps) {
   const reading = data.list[0]
@@ -45,7 +37,7 @@ export function AirQuality({ data }: AirQualityProps) {
 
       <h4 className="atmos-label mb-3">Pollutants</h4>
       <ul className="grid gap-2 sm:grid-cols-2">
-        {POLLUTANTS.map((pollutant) => {
+        {POLLUTANT_SPECS.map((pollutant) => {
           const value = reading.components[pollutant.key]
           const fill = Math.min((value / pollutant.scale) * 100, 100)
           return (
