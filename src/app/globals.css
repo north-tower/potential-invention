@@ -97,10 +97,10 @@
   }
 
   .atmos-label {
-    font-size: 10px;
+    font-size: 11px;
     letter-spacing: 0.22em;
     text-transform: uppercase;
-    color: var(--ink-muted);
+    color: var(--ink-soft);
     font-weight: 500;
   }
 

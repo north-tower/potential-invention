@@ -363,7 +363,7 @@ export function WeatherMap({
             </span>
           ))}
         </div>
-        <p className="mt-2 text-right text-[10px] text-ink-faint">
+        <p className="mt-2 text-right text-[11px] text-ink-soft">
           Log scale (in/hr), evenly spaced — composite reflectivity, illustrative
         </p>
       </div>

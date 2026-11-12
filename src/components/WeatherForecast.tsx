@@ -54,7 +54,7 @@ export function WeatherForecastHourly({ current, data, unit, onUnitChange }: Wea
               {toDisplayTemp(hour.temp, unit)}°
             </span>
             {hour.pop > 0.05 && (
-              <span className="mt-1 text-[10px] text-ink-faint">{Math.round(hour.pop * 100)}%</span>
+              <span className="mt-1 text-[11px] text-ink-soft">{Math.round(hour.pop * 100)}%</span>
             )}
           </div>
         ))}
