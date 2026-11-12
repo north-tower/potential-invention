@@ -41,6 +41,30 @@ function baseMapTileUrl(z: number, x: number, y: number): { src: string; attribu
 const TILE = 256
 const GRID = 5
 const HALF = Math.floor(GRID / 2)
+const MAP_MIN_ZOOM = 6
+const MAP_MAX_ZOOM = 12
+const RADAR_MAX_NATIVE_ZOOM = 7
+/** Free-tier RainViewer scheme; overlay is forced to grayscale in CSS */
+const RADAR_COLOR_SCHEME = 2
+const RADAR_TILE_OPTIONS = '1_0'
+
+function radarNativeScale(displayZoom: number) {
+  return 2 ** (displayZoom - Math.min(displayZoom, RADAR_MAX_NATIVE_ZOOM))
+}
+
+function radarTileUrl(
+  host: string,
+  path: string,
+  displayZoom: number,
+  x: number,
+  y: number,
+): string {
+  const nativeZ = Math.min(displayZoom, RADAR_MAX_NATIVE_ZOOM)
+  const scale = radarNativeScale(displayZoom)
+  const rx = Math.floor(x / scale)
+  const ry = Math.floor(y / scale)
+  return `${host}${path}/256/${nativeZ}/${rx}/${ry}/${RADAR_COLOR_SCHEME}/${RADAR_TILE_OPTIONS}.png`
+}
 
 function AtmosMark() {
   return (
@@ -68,6 +92,8 @@ export function WeatherMap({
   onRefresh,
 }: WeatherMapProps) {
   const [zoom, setZoom] = useState(9)
+  const atMinZoom = zoom <= MAP_MIN_ZOOM
+  const atMaxZoom = zoom >= MAP_MAX_ZOOM
   const [showLayer, setShowLayer] = useState(true)
   const [radarHost, setRadarHost] = useState<string | null>(null)
   const [radarPath, setRadarPath] = useState<string | null>(null)
@@ -123,6 +149,32 @@ export function WeatherMap({
     }
     return cells
   }, [tileX, tileY])
+
+  const radarTiles = useMemo(() => {
+    if (!radarPath || !radarHost) return []
+    const scale = radarNativeScale(zoom)
+    const centerRx = Math.floor(tileX / scale)
+    const centerRy = Math.floor(tileY / scale)
+    const half = Math.ceil(HALF / scale) + 1
+    const cells: { key: string; src: string; left: number; top: number; size: number }[] = []
+    for (let drdy = -half; drdy <= half; drdy += 1) {
+      for (let drdx = -half; drdx <= half; drdx += 1) {
+        const rx = centerRx + drdx
+        const ry = centerRy + drdy
+        const key = `${rx}-${ry}`
+        const baseDx = rx * scale - tileX
+        const baseDy = ry * scale - tileY
+        cells.push({
+          key,
+          src: radarTileUrl(radarHost, radarPath, zoom, rx * scale, ry * scale),
+          left: (baseDx + HALF) * TILE,
+          top: (baseDy + HALF) * TILE,
+          size: TILE * scale,
+        })
+      }
+    }
+    return cells
+  }, [radarHost, radarPath, tileX, tileY, zoom])
 
   const translateX = frame.w / 2 - (HALF + fracX) * TILE
   const translateY = frame.h / 2 - (HALF + fracY) * TILE
@@ -188,24 +240,34 @@ export function WeatherMap({
                 draggable={false}
               />
             ))}
-            {showLayer &&
-              tiles.map((tile) => {
-                const src = radarPath
-                  ? `${radarHost}${radarPath}/256/${zoom}/${tile.x}/${tile.y}/4/1_1.png`
-                  : `https://tile.openweathermap.org/map/precipitation_new/${zoom}/${tile.x}/${tile.y}.png?appid=${owmKey}`
-                return (
-                  <img
-                    key={`radar-${tile.x}-${tile.y}`}
-                    src={src}
-                    alt=""
-                    width={TILE}
-                    height={TILE}
-                    className="absolute opacity-70 mix-blend-multiply grayscale contrast-125"
-                    style={{ left: (tile.dx + HALF) * TILE, top: (tile.dy + HALF) * TILE }}
-                    draggable={false}
-                  />
-                )
-              })}
+            {showLayer && (
+              <div
+                className="pointer-events-none absolute inset-0 grayscale contrast-125"
+                aria-hidden
+              >
+                {radarPath && radarHost
+                  ? radarTiles.map((tile) => (
+                      <MapTile
+                        key={tile.key}
+                        src={tile.src}
+                        width={tile.size}
+                        height={tile.size}
+                        className="absolute opacity-[0.58] mix-blend-multiply"
+                        style={{ left: tile.left, top: tile.top }}
+                      />
+                    ))
+                  : tiles.map((tile) => (
+                      <MapTile
+                        key={`radar-owm-${tile.x}-${tile.y}`}
+                        src={`https://tile.openweathermap.org/map/precipitation_new/${zoom}/${tile.x}/${tile.y}.png?appid=${owmKey}`}
+                        width={TILE}
+                        height={TILE}
+                        className="absolute opacity-[0.58] mix-blend-multiply"
+                        style={{ left: (tile.dx + HALF) * TILE, top: (tile.dy + HALF) * TILE }}
+                      />
+                    ))}
+              </div>
+            )}
           </div>
 
           {showLayer && (
@@ -245,10 +307,18 @@ export function WeatherMap({
           )}
         </div>
         <div className="flex flex-col gap-1.5 pt-8">
-          <IconBtn label="Zoom in" onClick={() => setZoom((z) => Math.min(z + 1, 12))}>
+          <IconBtn
+            label="Zoom in"
+            disabled={atMaxZoom}
+            onClick={() => setZoom((z) => Math.min(z + 1, MAP_MAX_ZOOM))}
+          >
             <Plus className="h-3.5 w-3.5" />
           </IconBtn>
-          <IconBtn label="Zoom out" onClick={() => setZoom((z) => Math.max(z - 1, 6))}>
+          <IconBtn
+            label="Zoom out"
+            disabled={atMinZoom}
+            onClick={() => setZoom((z) => Math.max(z - 1, MAP_MIN_ZOOM))}
+          >
             <Minus className="h-3.5 w-3.5" />
           </IconBtn>
           <IconBtn
@@ -320,25 +390,58 @@ export function WeatherMap({
   )
 }
 
+function MapTile({
+  src,
+  width,
+  height,
+  className,
+  style,
+}: {
+  src: string
+  width: number
+  height: number
+  className: string
+  style: { left: number; top: number }
+}) {
+  const [hidden, setHidden] = useState(false)
+  if (hidden) return null
+  return (
+    <img
+      src={src}
+      alt=""
+      width={width}
+      height={height}
+      className={className}
+      style={style}
+      draggable={false}
+      onError={() => setHidden(true)}
+    />
+  )
+}
+
 function IconBtn({
   children,
   onClick,
   label,
   active = false,
+  disabled = false,
 }: {
   children: ReactNode
   onClick: () => void
   label: string
   active?: boolean
+  disabled?: boolean
 }) {
   return (
     <button
       type="button"
       onClick={onClick}
+      disabled={disabled}
       aria-label={label}
+      aria-disabled={disabled}
       className={`flex h-11 w-11 items-center justify-center rounded-md border bg-snow text-ink transition hover:bg-paper-2 ${
         active ? 'border-ink/40' : 'border-line'
-      }`}
+      } ${disabled ? 'pointer-events-none opacity-40' : ''}`}
     >
       {children}
     </button>
